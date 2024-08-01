@@ -1,0 +1,45 @@
+{
+	"name": "timnarr/kirby-helpers",
+	"description": "This plugin provides a collection of helper functions for Kirby",
+	"type": "kirby-plugin",
+	"version": "0.1.0",
+	"license": "MIT",
+	"homepage": "https://github.com/timnarr/kirby-helpers",
+	"authors": [
+		{
+			"name": "Tim Narr",
+			"email": "dev@tim-narr.com",
+			"homepage": "https://tim-narr.com"
+		}
+	],
+	"require": {
+		"php": "^8.2",
+		"getkirby/composer-installer": "^1.2"
+	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "^3",
+		"getkirby/cms": "^4.0"
+
+	},
+	"scripts": {
+		"lint": ["php-cs-fixer fix --dry-run --diff"],
+		"lint:fix": ["php-cs-fixer fix"]
+	},
+	"autoload": {
+		"files": [
+			"src/css.php",
+			"src/ensure.php",
+			"src/misc.php",
+			"src/vite.php"
+		]
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"allow-plugins": {
+			"getkirby/composer-installer": true
+		}
+	},
+	"extra": {
+		"kirby-cms-path": false
+	}
+}
