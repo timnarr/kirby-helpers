@@ -2,7 +2,7 @@
 	"name": "timnarr/kirby-helpers",
 	"description": "This plugin provides a collection of helper functions for Kirby",
 	"type": "kirby-plugin",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"license": "MIT",
 	"homepage": "https://github.com/timnarr/kirby-helpers",
 	"authors": [

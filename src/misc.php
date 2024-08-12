@@ -50,8 +50,8 @@ if (!function_exists('setBlankIfExternal')) {
 		$isInternal = array_filter($internalPatterns, fn ($pattern) => str_contains($link, $pattern));
 
 		return [
-			'href' => $dontReturnHref ? null : $link,
-			'target' => $isInternal ? null : '_blank',
+			...(!$dontReturnHref ? ['href' => $link] : []),
+			...(!$isInternal ? ['target' => '_blank'] : []),
 		];
 	}
 }
