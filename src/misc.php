@@ -146,3 +146,37 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 		return false;
 	}
 }
+
+
+/**
+ * This function returns an array of language codes where translations are available
+ * for a provided page, ignoring the current language code.
+ *
+ * @param Page $page The page for which to check available translations.
+ * @return array Returns an array of language codes that have translations available, excluding the current language.
+ */
+if (!function_exists('getAvailableTranslations')) {
+	function getAvailableTranslations(Page $page): array
+	{
+		$languages = kirby()->languages();
+		$currentLanguageCode = kirby()->language()->code();
+
+		$availableTranslations = [];
+
+		foreach ($languages as $language) {
+			$languageCode = $language->code();
+
+			// Skip the current language
+			if ($languageCode === $currentLanguageCode) {
+				continue;
+			}
+
+			// Check if translation exists for this language code
+			if ($page->translation($languageCode)->exists()) {
+				$availableTranslations[] = $languageCode;
+			}
+		}
+
+		return $availableTranslations;
+	}
+}

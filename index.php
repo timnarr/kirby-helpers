@@ -6,6 +6,14 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			'manifestPath' => kirby()->root() . '/build/manifest.json',
 		]
 	],
+	'pageMethods' => [
+		'hasTranslations' => function (): bool {
+			return !empty(getAvailableTranslations($this));
+		},
+		'getTranslations' => function (): array {
+			return getAvailableTranslations($this);
+		}
+	],
 	'translations' => [
 		'en' => [
 			'link_label_internal_home' => 'Link to homepage: { title }',
