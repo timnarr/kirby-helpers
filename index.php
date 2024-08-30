@@ -1,10 +1,20 @@
 <?php
 
+use Kirby\Content\Field;
+
 Kirby::plugin('timnarr/kirby-helpers', [
 	'options' => [
 		'vite' => [
 			'manifestPath' => kirby()->root() . '/build/manifest.json',
 		]
+	],
+	'fieldMethods' => [
+		'ensureLeft' => function (Field $field, string $prefix): string {
+			return ensureLeft($field->value, $prefix);
+		},
+		'ensureRight' => function (Field $field, string $suffix): string {
+			return ensureRight($field->value, $suffix);
+		},
 	],
 	'pageMethods' => [
 		'hasTranslations' => function (): bool {
