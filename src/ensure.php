@@ -10,6 +10,10 @@
 if (!function_exists('ensureLeft')) {
 	function ensureLeft(string $string, string $prefix): string
 	{
+		if (empty($string)) {
+			return '';
+		}
+
 		return str_starts_with($string, $prefix) ? $string : $prefix . $string;
 	}
 }
@@ -25,6 +29,10 @@ if (!function_exists('ensureLeft')) {
 if (!function_exists('ensureRight')) {
 	function ensureRight(string $string, string $suffix): string
 	{
+		if (empty($string)) {
+			return '';
+		}
+
 		return str_ends_with($string, $suffix) ? $string : $string . $suffix;
 	}
 }
