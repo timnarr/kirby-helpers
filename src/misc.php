@@ -25,11 +25,8 @@ if (!function_exists('heading')) {
 			throw new InvalidArgumentException("[kirby-helpers] Invalid heading level: `{$level}`, as " . get_debug_type($level) . ". Allowed values are 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'.");
 		}
 
-		// Generate the attributes string
-		$attributes = Html::attr($attrs);
-
 		// Return the complete heading element
-		return "<{$level} {$attributes}>{$text}</{$level}>";
+		return Html::tag(name: $level, content: $text, attr: $attrs);
 	}
 }
 
