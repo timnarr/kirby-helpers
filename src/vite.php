@@ -1,6 +1,7 @@
 <?php
 
 use Kirby\Cms\Asset;
+use Kirby\Cms\Html;
 use Kirby\Filesystem\F;
 
 if (!function_exists('isViteDevMode')) {
@@ -32,9 +33,9 @@ if (!function_exists('inlineViteAsset')) {
 			foreach ($files as $file) {
 				$filePath = vite()->asset($file);
 				if ($type === 'stylesheet') {
-					echo '<link rel="stylesheet" href="' . $filePath . '">';
+					echo Html::tag(name: 'link', attr: ['rel' => 'stylesheet', 'href' => $filePath]);
 				} elseif ($type === 'script') {
-					echo '<script src="' . $filePath . '" type="module"></script>';
+					echo Html::tag(name: 'script', attr: ['type' => 'module', 'src' => $filePath]);
 				}
 			}
 		} else {
@@ -45,9 +46,9 @@ if (!function_exists('inlineViteAsset')) {
 			}
 
 			if ($type === 'stylesheet') {
-				echo '<style>' . $content . '</style>';
+				echo Html::tag(name: 'style', content: $content);
 			} elseif ($type === 'script') {
-				echo '<script>' . $content . '</script>';
+				echo Html::tag(name: 'script', content: $content);
 			}
 		}
 	}
