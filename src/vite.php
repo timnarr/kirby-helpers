@@ -46,9 +46,9 @@ if (!function_exists('inlineViteAsset')) {
 			}
 
 			if ($type === 'stylesheet') {
-				echo Html::tag(name: 'style', content: $content);
+				echo Html::tag(name: 'style', content: [$content]);
 			} elseif ($type === 'script') {
-				echo Html::tag(name: 'script', content: $content);
+				echo Html::tag(name: 'script', content: [$content]);
 			}
 		}
 	}
