@@ -1,7 +1,7 @@
 <?php
 
-use Kirby\Cms\Asset;
 use Kirby\Cms\Html;
+use Kirby\Cms\Url;
 use Kirby\Filesystem\F;
 
 if (!function_exists('isViteDevMode')) {
@@ -41,7 +41,7 @@ if (!function_exists('inlineViteAsset')) {
 		} else {
 			$content = '';
 			foreach ($files as $file) {
-				$fileContent = F::read(vite()->asset($file));
+				$fileContent = F::read(Url::path(vite()->asset($file)));
 				$content .= $fileContent;
 			}
 
