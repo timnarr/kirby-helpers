@@ -73,7 +73,7 @@ if (!function_exists('linkLabel')) {
 				: throw new InvalidArgumentException('[kirby-helpers] Data for "internal" type must be an instance of Page, ' . get_debug_type($data) . ' given.'),
 
 			'document' => $data instanceof File
-				? tt('link_label_document', ['filename' => $data->filename()])
+				? tt('link_label_document', ['filename' => $data->filename() . ' (' . $data->niceSize() . ')'])
 				: throw new InvalidArgumentException('[kirby-helpers] Data for "document" type must be an instance of File, ' . get_debug_type($data) . ' given.'),
 
 			'external' => is_string($data)
