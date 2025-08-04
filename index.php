@@ -6,7 +6,7 @@ Kirby::plugin('timnarr/kirby-helpers', [
 	'options' => [
 		'vite' => [
 			'manifestPath' => kirby()->root() . '/build/manifest.json',
-		]
+		],
 	],
 	'fieldMethods' => [
 		'ensureLeft' => function (Field $field, string $prefix): string {
@@ -16,13 +16,18 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			return ensureRight($field->value, $suffix);
 		},
 	],
+	'fileMethods' => [
+		'readAccessible' => function (string $title = '', string $description = '', bool $isDecorative = false) {
+			return readAccessible($this, $title, $description, $isDecorative);
+		},
+	],
 	'pageMethods' => [
 		'hasTranslations' => function (): bool {
 			return !empty(getAvailableTranslations($this));
 		},
 		'getTranslations' => function (): array {
 			return getAvailableTranslations($this);
-		}
+		},
 	],
 	'translations' => [
 		'en' => [
@@ -40,6 +45,6 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			'link_label_external' => 'Externer Link: { url } (Öffnet neuen Tab)',
 			'link_label_mail' => 'E-Mail schreiben an: { mail } (Öffnet neues Fenster Ihres E-Mail Programms)',
 			'link_label_tel' => 'Telefonnummer anrufen: { tel } (Öffnet neues Fenster/Programm)',
-		]
-	]
+		],
+	],
 ]);

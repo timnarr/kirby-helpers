@@ -1,7 +1,10 @@
 <?php
 
 	$finder = PhpCsFixer\Finder::create()
+		->exclude('site/plugins')
+		->exclude('storage')
 		->exclude('vendor')
+		->exclude('node_modules')
 		->ignoreDotFiles(true)
 		->in(__DIR__);
 
@@ -10,6 +13,7 @@
 		->setUsingCache(true)
 		->setCacheFile(__DIR__ . '/.cache/.php-cs-fixer.cache')
 		->setRules([
+			'@PHP84Migration' => true,
 			'@PSR12' => true,
 			'align_multiline_comment' => ['comment_type' => 'phpdocs_only'],
 			'array_indentation' => true,
@@ -26,7 +30,7 @@
 			'explicit_string_variable' => true,
 			'full_opening_tag' => true,
 			'function_declaration' => ['closure_function_spacing' => 'one', 'closure_fn_spacing' => 'one'],
-			'function_typehint_space' => true,
+			'type_declaration_spaces' => true,
 			'include' => true,
 			'logical_operators' => true,
 			'magic_constant_casing' => true,
@@ -35,8 +39,8 @@
 			'modernize_types_casting' => true,
 			'multiline_comment_opening_closing' => true,
 			'native_function_casing' => true,
-			'native_function_type_declaration_casing' => true,
-			'new_with_braces' => true,
+			'native_type_declaration_casing' => true,
+			'new_with_parentheses' => true,
 			'no_blank_lines_after_phpdoc' => true,
 			'no_empty_comment' => true,
 			'no_empty_phpdoc' => true,

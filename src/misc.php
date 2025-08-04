@@ -177,3 +177,64 @@ if (!function_exists('getAvailableTranslations')) {
 		return $availableTranslations;
 	}
 }
+
+
+/**
+ * Reads the SVG content and adds accessibility attributes based on custom fields.
+ *
+ * @param File $file The file object representing the SVG.
+ * @param string $title The title for the SVG (optional).
+ * @param string $description The description for the SVG (optional).
+ * @param bool $isDecorative Whether the SVG is decorative (optional).
+ * @return string The modified SVG content with accessibility attributes.
+ */
+if (!function_exists('readAccessible')) {
+	function readAccessible(File $file, string $title = '', string $description = '', bool $isDecorative = false): string
+	{
+		if ($file->extension() !== 'svg') {
+			return $file->read();
+		}
+
+		$svgContent = $file->read();
+
+		// Try to get values from custom fields if not provided
+		if (empty($title) && $file->svgTitle()->isNotEmpty()) {
+			$title = $file->svgTitle()->value();
+		}
+
+		if (empty($description) && $file->svgDescription()->isNotEmpty()) {
+			$description = $file->svgDescription()->value();
+		}
+
+		// Check if marked as decorative in custom field
+		if ($file->svgDecorative()->toBool()) {
+			$isDecorative = true;
+		}
+
+		if ($isDecorative) {
+			$svgContent = str_replace(
+				'<svg',
+				'<svg aria-hidden="true"',
+				$svgContent
+			);
+		} else {
+			$uniqueId = uniqid('svg-');
+			$finalTitle = $title ?: $file->alt()->or($file->name())->value();
+
+			// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby (see tip #4)
+			$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title"';
+			if ($description) {
+				$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title ' . $uniqueId . '-desc"';
+			}
+
+			$svgContent = str_replace('<svg', '<svg ' . $ariaAttributes, $svgContent);
+
+			$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
+			$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
+
+			$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent);
+		}
+
+		return $svgContent;
+	}
+}
