@@ -297,18 +297,22 @@ if (!function_exists('readAccessible')) {
 /**
  * Build a mailto link with optional subject and body parameters.
  *
- * @param string $email The email address (will be obfuscated).
- * @param string|null $subject Optional subject line for the email.
- * @param string|null $body Optional body text for the email.
+ * @param string $email The email address (will be obfuscated). Should not be pre-encoded.
+ * @param string|null $subject Optional subject line for the email. Should not be pre-encoded.
+ * @param string|null $body Optional body text for the email. Line breaks can be added with literal \n. Should not be pre-encoded.
  * @return string The complete mailto link with query parameters.
  *
  * @example
  * buildMailtoLink('test@example.com', 'Hello', 'This is a test')
- * // returns 'mailto:obfuscated@email.com?subject=hello&body=this-is-a-test'
+ * // returns 'mailto:obfuscated@email.com?subject=Hello&body=This%20is%20a%20test'
  *
  * @example
  * buildMailtoLink('test@example.com')
  * // returns 'mailto:obfuscated@email.com'
+ *
+ * @example with line breaks
+ * buildMailtoLink('test@example.com', 'Hello', 'Line 1\nLine 2')
+ * // returns mailto link with proper line break encoding
  */
 function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
 {
