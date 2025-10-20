@@ -52,7 +52,7 @@ if (!function_exists('cssIfBlock')) {
 			if ($lazy) {
 				cssLazy($file);
 			} else {
-				Html::css($file);
+				echo Html::css($file);
 			}
 		}
 	}
@@ -76,7 +76,7 @@ if (!function_exists('cssIfTemplate')) {
 			if ($lazy) {
 				cssLazy($file);
 			} else {
-				Html::css($file);
+				echo Html::css($file);
 			}
 		}
 	}
