@@ -17,7 +17,7 @@ use Kirby\Cms\Html;
 if (!function_exists('cssLazy')) {
 	function cssLazy(string $file, bool $omitNoscript = false): void
 	{
-		echo Html::css($file, [
+		echo Html::css(url: $file, attr: [
 			'as' => 'style',
 			'rel' => 'preload',
 			'fetchpriority' => 'low',
@@ -25,7 +25,7 @@ if (!function_exists('cssLazy')) {
 		]);
 
 		if (!$omitNoscript) {
-			echo '<noscript>' . Html::css($file) . '</noscript>';
+			echo '<noscript>' . Html::css(url: $file) . '</noscript>';
 		}
 	}
 }
@@ -52,7 +52,7 @@ if (!function_exists('cssIfBlock')) {
 			if ($lazy) {
 				cssLazy($file);
 			} else {
-				echo Html::css($file);
+				echo Html::css(url: $file);
 			}
 		}
 	}
@@ -76,7 +76,7 @@ if (!function_exists('cssIfTemplate')) {
 			if ($lazy) {
 				cssLazy($file);
 			} else {
-				echo Html::css($file);
+				echo Html::css(url: $file);
 			}
 		}
 	}
