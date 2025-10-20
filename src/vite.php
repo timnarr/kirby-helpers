@@ -2,6 +2,8 @@
 
 use Kirby\Cms\Html;
 use Kirby\Cms\Url;
+use Kirby\Exception\Exception;
+use Kirby\Exception\InvalidArgumentException;
 use Kirby\Filesystem\F;
 
 if (!function_exists('isViteDevMode')) {
@@ -41,17 +43,23 @@ if (!function_exists('inlineViteAsset')) {
 		} else {
 			$content = '';
 			foreach ($files as $file) {
-				$assetPath = vite()->asset($file);
-				$fullPath = Url::path($assetPath);
-				$realPath = realpath($fullPath);
-				$rootPath = realpath(kirby()->root());
+				try {
+					$assetPath = vite()->asset($file);
+					$fullPath = Url::path($assetPath);
+					$realPath = realpath($fullPath);
+					$rootPath = realpath(kirby()->root());
 
-				if ($realPath === false || !str_starts_with($realPath, $rootPath)) {
-					throw new InvalidArgumentException("[kirby-helpers] Invalid asset path: {$file}");
+					if ($realPath === false || !str_starts_with($realPath, $rootPath)) {
+						throw new InvalidArgumentException("[kirby-helpers] Invalid asset path: {$file}");
+					}
+
+					$fileContent = F::read($realPath);
+					$content .= $fileContent;
+				} catch (Exception $e) {
+					throw new InvalidArgumentException(
+						"[kirby-helpers] Failed to read asset: {$file}. " . $e->getMessage()
+					);
 				}
-
-				$fileContent = F::read($realPath);
-				$content .= $fileContent;
 			}
 
 			if ($type === 'stylesheet') {

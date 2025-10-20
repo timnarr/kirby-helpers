@@ -5,6 +5,7 @@ use Kirby\Cms\Html;
 use Kirby\Cms\Page;
 use Kirby\Cms\Pages;
 use Kirby\Cms\Url;
+use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Toolkit\Str;
 
@@ -220,51 +221,57 @@ if (!function_exists('getAvailableTranslations')) {
 if (!function_exists('readAccessible')) {
 	function readAccessible(File $file, string $title = '', string $description = '', bool $isDecorative = false): string
 	{
-		if ($file->extension() !== 'svg') {
-			return $file->read();
-		}
-
-		$svgContent = $file->read();
-
-		// Try to get values from custom fields if not provided
-		if (empty($title) && $file->svgTitle()->isNotEmpty()) {
-			$title = $file->svgTitle()->value();
-		}
-
-		if (empty($description) && $file->svgDescription()->isNotEmpty()) {
-			$description = $file->svgDescription()->value();
-		}
-
-		// Check if marked as decorative in custom field
-		if ($file->svgDecorative()->toBool()) {
-			$isDecorative = true;
-		}
-
-		if ($isDecorative) {
-			$svgContent = str_replace(
-				'<svg',
-				'<svg aria-hidden="true"',
-				$svgContent
-			);
-		} else {
-			$uniqueId = uniqid('svg-');
-			$finalTitle = $title ?: $file->alt()->or($file->name())->value();
-
-			// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby
-			$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title"';
-			if ($description) {
-				$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title ' . $uniqueId . '-desc"';
+		try {
+			if ($file->extension() !== 'svg') {
+				return $file->read();
 			}
 
-			$svgContent = str_replace('<svg', '<svg ' . $ariaAttributes, $svgContent);
+			$svgContent = $file->read();
 
-			$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
-			$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
+			// Try to get values from custom fields if not provided
+			if (empty($title) && $file->svgTitle()->isNotEmpty()) {
+				$title = $file->svgTitle()->value();
+			}
 
-			$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent);
+			if (empty($description) && $file->svgDescription()->isNotEmpty()) {
+				$description = $file->svgDescription()->value();
+			}
+
+			// Check if marked as decorative in custom field
+			if ($file->svgDecorative()->toBool()) {
+				$isDecorative = true;
+			}
+
+			if ($isDecorative) {
+				$svgContent = str_replace(
+					'<svg',
+					'<svg aria-hidden="true"',
+					$svgContent
+				);
+			} else {
+				$uniqueId = uniqid('svg-');
+				$finalTitle = $title ?: $file->alt()->or($file->name())->value();
+
+				// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby
+				$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title"';
+				if ($description) {
+					$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title ' . $uniqueId . '-desc"';
+				}
+
+				$svgContent = str_replace('<svg', '<svg ' . $ariaAttributes, $svgContent);
+
+				$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
+				$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
+
+				$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent);
+			}
+
+			return $svgContent;
+		} catch (Exception $e) {
+			throw new InvalidArgumentException(
+				"[kirby-helpers] Failed to read or process file: {$file->filename()}. " . $e->getMessage()
+			);
 		}
-
-		return $svgContent;
 	}
 }
 
