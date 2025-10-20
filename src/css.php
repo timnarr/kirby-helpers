@@ -17,7 +17,7 @@ use Kirby\Cms\Html;
 if (!function_exists('cssLazy')) {
 	function cssLazy(string $file, bool $omitNoscript = false): void
 	{
-		echo Html::css(url: $file, attr: [
+		echo Html::css(url: $file, options: [
 			'as' => 'style',
 			'rel' => 'preload',
 			'fetchpriority' => 'low',
