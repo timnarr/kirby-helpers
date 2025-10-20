@@ -71,10 +71,10 @@ function incrementHeadingLevel(string $level, int $steps = 1): string
 if (!function_exists('setBlankIfExternal')) {
 	function setBlankIfExternal(string $link, bool $dontReturnHref = false): array
 	{
-		$self = Url::home();
-		$internalPatterns = ['mailto:', 'tel:', 'sms:', $self];
+		$internalPatterns = ['mailto:', 'tel:', 'sms:'];
 
-		$isInternal = array_filter($internalPatterns, fn ($pattern) => str_contains($link, $pattern));
+		$isInternal = array_filter($internalPatterns, fn ($pattern) => str_contains($link, $pattern)) ||
+			str_starts_with($link, Url::home());
 
 		return [
 			...(!$dontReturnHref ? ['href' => $link] : []),
