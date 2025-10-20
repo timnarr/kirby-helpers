@@ -13,7 +13,7 @@
 		->setUsingCache(true)
 		->setCacheFile(__DIR__ . '/.cache/.php-cs-fixer.cache')
 		->setRules([
-			'@PHP84Migration' => true,
+			'@PHP8x4Migration' => true,
 			'@PSR12' => true,
 			'align_multiline_comment' => ['comment_type' => 'phpdocs_only'],
 			'array_indentation' => true,
