@@ -30,6 +30,35 @@ if (!function_exists('heading')) {
 	}
 }
 
+/**
+ * Increment or decrement a heading level by a specified number of steps.
+ *
+ * @param string $level The current heading level (e.g., 'h1', 'h2', ..., 'h6').
+ * @param int $steps The number of steps to increment (positive) or decrement (negative). Default is 1.
+ * @return string The new heading level, clamped between 'h1' and 'h6'.
+ * @throws InvalidArgumentException If the provided heading level is not valid.
+ *
+ * @example
+ * incrementHeadingLevel('h2', 1) // returns 'h3'
+ * incrementHeadingLevel('h2', -1) // returns 'h1'
+ * incrementHeadingLevel('h6', 1) // returns 'h6' (clamped at maximum)
+ * incrementHeadingLevel('h1', -1) // returns 'h1' (clamped at minimum)
+ */
+function incrementHeadingLevel(string $level, int $steps = 1): string
+{
+	// Validate input
+	if (!in_array($level, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
+		throw new InvalidArgumentException("[kirby-helpers] Invalid heading level: `{$level}`. Allowed values are 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'.");
+	}
+
+	// Extract the numeric level
+	$currentLevel = (int)substr($level, 1);
+
+	// Calculate new level and clamp between 1 and 6
+	$newLevel = max(1, min(6, $currentLevel + $steps));
+
+	return 'h' . $newLevel;
+}
 
 /**
  * Determine if a link should open in a new tab (if external) and return an array of attributes.
@@ -221,7 +250,7 @@ if (!function_exists('readAccessible')) {
 			$uniqueId = uniqid('svg-');
 			$finalTitle = $title ?: $file->alt()->or($file->name())->value();
 
-			// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby (see tip #4)
+			// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby
 			$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title"';
 			if ($description) {
 				$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title ' . $uniqueId . '-desc"';
@@ -237,4 +266,49 @@ if (!function_exists('readAccessible')) {
 
 		return $svgContent;
 	}
+}
+
+/**
+ * Build a mailto link with optional subject and body parameters.
+ *
+ * @param string $email The email address (will be obfuscated).
+ * @param string|null $subject Optional subject line for the email.
+ * @param string|null $body Optional body text for the email.
+ * @return string The complete mailto link with query parameters.
+ *
+ * @example
+ * buildMailtoLink('test@example.com', 'Hello', 'This is a test')
+ * // returns 'mailto:obfuscated@email.com?subject=hello&body=this-is-a-test'
+ *
+ * @example
+ * buildMailtoLink('test@example.com')
+ * // returns 'mailto:obfuscated@email.com'
+ */
+function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
+{
+	// Start with mailto and obfuscated email
+	$mailto = 'mailto:' . Kirby\Toolkit\Str::encode($email);
+
+	$params = [];
+
+	// Add subject if provided
+	if (!empty($subject)) {
+		$params[] = 'subject=' . rawurlencode($subject);
+	}
+
+	// Add body if provided
+	if (!empty($body)) {
+		// Convert literal \n to actual line breaks
+		$body = str_replace('\\n', "\n", $body);
+		// Normalize line breaks to \r\n (CRLF) for email compatibility
+		$body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
+		$params[] = 'body=' . rawurlencode($body);
+	}
+
+	// Append parameters if any exist
+	if (!empty($params)) {
+		$mailto .= '?' . implode('&', $params);
+	}
+
+	return $mailto;
 }
