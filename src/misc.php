@@ -153,12 +153,12 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 		$ignoredSlugs = array_merge($defaultIgnoredSlugs, $ignoredSlugs);
 		$ignoredTemplates = array_merge($defaultIgnoredTemplates, $ignoredTemplates);
 
-		$ignoredPagesIds = [];
 		$ignoredPages ??= new Pages([]);
 
-		foreach ($ignoredPages as $ignoredPage) {
-			array_push($ignoredPagesIds, $ignoredPage->uuid()->id());
-		}
+		$ignoredPagesIds = array_map(
+			fn ($page) => $page->uuid()->id(),
+			iterator_to_array($ignoredPages)
+		);
 
 		// Check if the current page is in one of the ignored lists
 		if (
