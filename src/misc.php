@@ -7,6 +7,7 @@ use Kirby\Cms\Pages;
 use Kirby\Cms\Url;
 use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Sane\Sane;
 use Kirby\Toolkit\Str;
 
 /**
@@ -229,6 +230,9 @@ if (!function_exists('readAccessible')) {
 			}
 
 			$svgContent = $file->read();
+
+			// Validate and sanitize SVG content to prevent XSS attacks
+			$svgContent = Sane::sanitize($svgContent, 'svg');
 
 			// Try to get values from custom fields if not provided
 			if (empty($title) && $file->svgTitle()->isNotEmpty()) {
