@@ -41,7 +41,16 @@ if (!function_exists('inlineViteAsset')) {
 		} else {
 			$content = '';
 			foreach ($files as $file) {
-				$fileContent = F::read(Url::path(vite()->asset($file)));
+				$assetPath = vite()->asset($file);
+				$fullPath = Url::path($assetPath);
+				$realPath = realpath($fullPath);
+				$rootPath = realpath(kirby()->root());
+
+				if ($realPath === false || !str_starts_with($realPath, $rootPath)) {
+					throw new InvalidArgumentException("[kirby-helpers] Invalid asset path: {$file}");
+				}
+
+				$fileContent = F::read($realPath);
 				$content .= $fileContent;
 			}
 
