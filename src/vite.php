@@ -36,7 +36,7 @@ if (!function_exists('inlineViteAsset')) {
 	 */
 	function inlineViteAsset(string|array $files, string $type): void
 	{
-		$files = (array)$files; // Ensure $files is an array
+		$files = is_array($files) ? $files : [$files];
 
 		if (isViteDevMode()) {
 			foreach ($files as $file) {
