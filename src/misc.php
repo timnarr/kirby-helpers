@@ -60,17 +60,19 @@ if (!function_exists('heading')) {
  * incrementHeadingLevel('h6', 1) // returns 'h6' (clamped at maximum)
  * incrementHeadingLevel('h1', -1) // returns 'h1' (clamped at minimum)
  */
-function incrementHeadingLevel(string $level, int $steps = 1): string
-{
-	validateHeadingLevel($level);
+if (!function_exists('incrementHeadingLevel')) {
+	function incrementHeadingLevel(string $level, int $steps = 1): string
+	{
+		validateHeadingLevel($level);
 
-	// Extract the numeric level
-	$currentLevel = (int)substr($level, 1);
+		// Extract the numeric level
+		$currentLevel = (int)substr($level, 1);
 
-	// Calculate new level and clamp between 1 and 6
-	$newLevel = max(1, min(6, $currentLevel + $steps));
+		// Calculate new level and clamp between 1 and 6
+		$newLevel = max(1, min(6, $currentLevel + $steps));
 
-	return 'h' . $newLevel;
+		return 'h' . $newLevel;
+	}
 }
 
 /**
