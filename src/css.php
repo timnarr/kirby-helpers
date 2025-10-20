@@ -6,7 +6,7 @@ use Kirby\Cms\Html;
  * Load a CSS file lazily.
  *
  * @param string $file The CSS file path.
- * @param bool $omitNoscript Optional. If true, omit the noscript fallback.
+ * @param bool $omitNoscript If true, omit the noscript fallback. Default: false.
  *
  * @example
  * cssLazy('assets/css/carousel.css', true);
