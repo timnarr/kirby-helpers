@@ -317,7 +317,7 @@ if (!function_exists('readAccessible')) {
 function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
 {
 	// Start with mailto and obfuscated email
-	$mailto = 'mailto:' . Kirby\Toolkit\Str::encode($email);
+	$mailto = 'mailto:' . Str::encode($email);
 
 	$params = [];
 
