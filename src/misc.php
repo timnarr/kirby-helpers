@@ -11,6 +11,24 @@ use Kirby\Sane\Sane;
 use Kirby\Toolkit\Str;
 
 /**
+ * Validate a heading level string.
+ *
+ * @param string $level The heading level to validate.
+ * @return void
+ * @throws InvalidArgumentException If the provided heading level is not valid.
+ */
+if (!function_exists('validateHeadingLevel')) {
+	function validateHeadingLevel(string $level): void
+	{
+		if (!in_array($level, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true)) {
+			throw new InvalidArgumentException(
+				"[kirby-helpers] Invalid heading level: `{$level}`. Allowed values are 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'."
+			);
+		}
+	}
+}
+
+/**
  * Generate an HTML heading element with the specified level, text, and attributes.
  *
  * @param string $level The heading level (e.g., 'h1', 'h2', 'h3', 'h4', 'h5', 'h6').
@@ -22,12 +40,8 @@ use Kirby\Toolkit\Str;
 if (!function_exists('heading')) {
 	function heading(string $level, string $text, array $attrs = []): string
 	{
-		// Check if the provided level is valid
-		if (!in_array($level, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
-			throw new InvalidArgumentException("[kirby-helpers] Invalid heading level: `{$level}`, as " . get_debug_type($level) . ". Allowed values are 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'.");
-		}
+		validateHeadingLevel($level);
 
-		// Return the complete heading element
 		return Html::tag(name: $level, content: $text, attr: $attrs);
 	}
 }
@@ -48,10 +62,7 @@ if (!function_exists('heading')) {
  */
 function incrementHeadingLevel(string $level, int $steps = 1): string
 {
-	// Validate input
-	if (!in_array($level, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
-		throw new InvalidArgumentException("[kirby-helpers] Invalid heading level: `{$level}`. Allowed values are 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'.");
-	}
+	validateHeadingLevel($level);
 
 	// Extract the numeric level
 	$currentLevel = (int)substr($level, 1);
