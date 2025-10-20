@@ -96,11 +96,13 @@ if (!function_exists('linkLabel')) {
 	function linkLabel(string $type, string|Page|File $data): string
 	{
 		return match ($type) {
-			'internal' => $data instanceof Page
-				? ($data->isHomepage()
-					? tt('link_label_internal_home', ['title' => site()->title()])
-					: tt('link_label_internal', ['title' => $data->metaTitle()->or($data->title())]))
-				: throw new InvalidArgumentException('[kirby-helpers] Data for "internal" type must be an instance of Page, ' . get_debug_type($data) . ' given.'),
+			'internal' => match (true) {
+				!($data instanceof Page) => throw new InvalidArgumentException(
+					'[kirby-helpers] Data for "internal" type must be an instance of Page, ' . get_debug_type($data) . ' given.'
+				),
+				$data->isHomepage() => tt('link_label_internal_home', ['title' => site()->title()]),
+				default => tt('link_label_internal', ['title' => $data->metaTitle()->or($data->title())]),
+			},
 
 			'document' => $data instanceof File
 				? tt('link_label_document', ['filename' => $data->filename() . ' (' . $data->niceSize() . ')'])
