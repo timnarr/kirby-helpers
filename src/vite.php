@@ -9,13 +9,20 @@ use Kirby\Filesystem\F;
 if (!function_exists('isViteDevMode')) {
 	/**
 	 * Check if Vite is in development mode by verifying the presence of the manifest file.
+	 * Uses static caching to avoid repeated filesystem checks.
 	 *
 	 * @return bool True if Vite is in development mode, false otherwise.
 	 */
 	function isViteDevMode(): bool
 	{
-		$manifestPath = kirby()->option('timnarr.kirby-helpers.vite.manifestPath');
-		return !F::exists($manifestPath);
+		static $devMode = null;
+
+		if ($devMode === null) {
+			$manifestPath = kirby()->option('timnarr.kirby-helpers.vite.manifestPath');
+			$devMode = !F::exists($manifestPath);
+		}
+
+		return $devMode;
 	}
 }
 
