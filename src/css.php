@@ -69,7 +69,7 @@ if (!function_exists('cssIfBlock')) {
 if (!function_exists('cssIfTemplate')) {
 	function cssIfTemplate(string $file, string|array $template, bool $lazy = false): void
 	{
-		$templates = (array)$template;
+		$templates = is_array($template) ? $template : [$template];
 		$currentTemplate = page()->template();
 
 		if (in_array($currentTemplate, $templates, true)) {
