@@ -9,11 +9,17 @@ Kirby::plugin('timnarr/kirby-helpers', [
 		],
 	],
 	'fieldMethods' => [
-		'ensureLeft' => function (Field $field, string $prefix): string {
-			return ensureLeft($field->value, $prefix);
+		'ensureLeft' => function (Field $field, string $prefix): Field {
+			$field->value = ensureLeft($field->value, $prefix);
+			return $field;
 		},
-		'ensureRight' => function (Field $field, string $suffix): string {
-			return ensureRight($field->value, $suffix);
+		'ensureRight' => function (Field $field, string $suffix): Field {
+			$field->value = ensureRight($field->value, $suffix);
+			return $field;
+		},
+		'autoLinkTitles' => function (Field $field): Field {
+			$field->value = autoLinkTitles($field->value);
+			return $field;
 		},
 	],
 	'fileMethods' => [
@@ -28,6 +34,18 @@ Kirby::plugin('timnarr/kirby-helpers', [
 		'getTranslations' => function (): array {
 			return getAvailableTranslations($this);
 		},
+		'getMissingTranslations' => function (): array {
+			return getMissingTranslations($this);
+		},
+		'missingTranslationsBadge' => function (): string {
+			$codes = $this->getMissingTranslations();
+
+			if (empty($codes)) {
+				return '<span class="k-info-badge" data-theme="green">All translated</span>';
+			}
+
+			return '<span class="k-info-badge" data-theme="red">Missing: ' . strtoupper(implode(', ', $codes)) . '</span>';
+		}
 	],
 	'translations' => [
 		'en' => [
