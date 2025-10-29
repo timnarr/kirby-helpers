@@ -149,6 +149,13 @@ Get available translation language codes for a page (excluding current language)
 getAvailableTranslations($page); // ['de', 'fr']
 ```
 
+#### `getMissingTranslations(Page $page): array`
+Get an array of language codes for which the page translation does not exist.
+
+```php
+getMissingTranslations($page); // ['de', 'fr']
+```
+
 ---
 
 ### File Helpers
@@ -219,6 +226,21 @@ if ($page->hasTranslations()) {
 ### `getTranslations(): array`
 ```php
 $translations = $page->getTranslations(); // ['de', 'fr']
+```
+
+### `missingTranslationCodes(): array`
+Get an array of language codes for which the page translation does not exist.
+```php
+$missing = $page->missingTranslationCodes(); // ['de', 'fr']
+```
+
+### `missingTranslationsBadge(): string`
+Generate a Kirby Panel info badge showing translation status. Returns a green badge if all translations exist, or a red badge with missing language codes.
+```php
+echo $page->missingTranslationsBadge();
+// <span class="k-info-badge" data-theme="green">All translated</span>
+// or
+// <span class="k-info-badge" data-theme="red">Missing: DE, FR</span>
 ```
 
 ---
