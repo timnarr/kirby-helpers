@@ -45,7 +45,7 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			}
 
 			return '<span class="k-info-badge" data-theme="red">Missing: ' . strtoupper(implode(', ', $codes)) . '</span>';
-		}
+		},
 	],
 	'translations' => [
 		'en' => [
