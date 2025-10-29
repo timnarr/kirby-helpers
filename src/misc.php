@@ -9,6 +9,7 @@ use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Sane\Sane;
 use Kirby\Toolkit\Str;
+use Kirby\Uuid\Uuid;
 
 /**
  * Validate a heading level string.
@@ -226,6 +227,29 @@ if (!function_exists('getAvailableTranslations')) {
 
 
 /**
+ * Get an array of language codes for which the page translation does not exist.
+ *
+ * @param Page $page The page for which to check missing translations.
+ * @return array Returns an array of language codes that are missing translations.
+ */
+if (!function_exists('getMissingTranslations')) {
+	function getMissingTranslations(Page $page): array
+	{
+		$languages = kirby()->languages();
+		$missingTranslations = [];
+
+		foreach ($languages as $language) {
+			if (!$page->translation($language->code())->exists()) {
+				$missingTranslations[] = $language->code();
+			}
+		}
+
+		return $missingTranslations;
+	}
+}
+
+
+/**
  * Reads the SVG content and adds accessibility attributes based on custom fields.
  *
  * @param File $file The file object representing the SVG.
@@ -316,7 +340,6 @@ if (!function_exists('readAccessible')) {
  */
 function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
 {
-	// Start with mailto and obfuscated email
 	$mailto = 'mailto:' . Str::encode($email);
 
 	$params = [];
@@ -341,4 +364,86 @@ function buildMailtoLink(string $email, string|null $subject = null, string|null
 	}
 
 	return $mailto;
+}
+
+/**
+ * Automatically add title attributes to links in HTML content.
+ * Detects link types (internal pages, files, email, phone, external) and generates appropriate titles.
+ *
+ * @param string $html The HTML content containing links.
+ * @return string The HTML with title attributes added to links (if they don't already have one).
+ *
+ * @example
+ * autoLinkTitles('<a href="/@/page/abc123">Contact</a>')
+ * // returns '<a href="/@/page/abc123" title="Link to page: Contact">Contact</a>'
+ */
+if (!function_exists('autoLinkTitles')) {
+	function autoLinkTitles(string $html): string
+	{
+		return preg_replace_callback(
+			'/<a\s+([^>]*?)>/i',
+			function ($matches) {
+				$attributes = $matches[1];
+
+				// Skip if title attribute already exists
+				if (preg_match('/\btitle\s*=/i', $attributes)) {
+					return $matches[0];
+				}
+
+				// Extract href attribute
+				if (!preg_match('/\bhref\s*=\s*(["\'])(.*?)\1/i', $attributes, $hrefMatch)) {
+					return $matches[0];
+				}
+
+				$href = $hrefMatch[2];
+				$title = null;
+
+				// Detect link type and generate title
+				if (preg_match('#^/@/page/([a-z0-9]+)#i', $href, $uuidMatch)) {
+					// Internal page link via UUID
+					try {
+						$page = Uuid::for('page://' . $uuidMatch[1])?->model();
+						if ($page instanceof Page) {
+							$title = linkLabel('internal', $page);
+						}
+					} catch (\Exception $e) {
+						// Skip if page not found
+					}
+				} elseif (preg_match('#^/@/file/([a-z0-9]+)#i', $href, $uuidMatch)) {
+					// File/document link via UUID
+					try {
+						$file = Uuid::for('file://' . $uuidMatch[1])?->model();
+						if ($file instanceof File) {
+							$title = linkLabel('document', $file);
+						}
+					} catch (\Exception $e) {
+						// Skip if file not found
+					}
+				} elseif (preg_match('/^mailto:(.+)/i', $href, $mailMatch)) {
+					// Email link
+					$title = linkLabel('mail', $mailMatch[1]);
+				} elseif (preg_match('/^tel:(.+)/i', $href, $telMatch)) {
+					// Phone link
+					$title = linkLabel('tel', $telMatch[1]);
+				} elseif (preg_match('#^https?://#i', $href)) {
+					// External URL (check if it's not the same domain)
+					$currentHost = parse_url(Url::home(), PHP_URL_HOST);
+					$linkHost = parse_url($href, PHP_URL_HOST);
+
+					if ($currentHost !== $linkHost) {
+						$title = linkLabel('external', $href);
+					}
+				}
+
+				// Add title attribute if we generated one
+				if ($title !== null) {
+					$escapedTitle = Html::encode($title);
+					return '<a ' . trim($attributes) . ' title="' . $escapedTitle . '">';
+				}
+
+				return $matches[0];
+			},
+			$html
+		);
+	}
 }
