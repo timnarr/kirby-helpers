@@ -367,6 +367,35 @@ function buildMailtoLink(string $email, string|null $subject = null, string|null
 }
 
 /**
+ * Extract all used block types from a Blocks object or array of blocks.
+ * Useful for conditional CSS loading based on which blocks are used on a page.
+ *
+ * @param \Kirby\Cms\Blocks|array $blocks The blocks to analyze.
+ * @return array An array of unique block type strings.
+ *
+ * @example
+ * $blockTypes = getUsedBlockTypes($page->text()->toBlocks());
+ * // returns ['heading', 'text', 'image', 'gallery']
+ *
+ * @example with cssIfBlock
+ * $pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
+ * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
+ */
+if (!function_exists('getUsedBlockTypes')) {
+	function getUsedBlockTypes(\Kirby\Cms\Blocks|array $blocks): array
+	{
+		$types = [];
+
+		foreach ($blocks as $block) {
+			$types[] = $block->type();
+		}
+
+		return array_unique($types);
+	}
+}
+
+
+/**
  * Automatically add title attributes to links in HTML content.
  * Detects link types (internal pages, files, email, phone, external) and generates appropriate titles.
  *
