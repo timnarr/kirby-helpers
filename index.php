@@ -17,6 +17,10 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			$field->value = ensureRight($field->value, $suffix);
 			return $field;
 		},
+		'ensureHashed' => function (Field $field): Field {
+			$field->value = ensureHashed($field->value);
+			return $field;
+		},
 		'autoLinkTitles' => function (Field $field): Field {
 			$field->value = autoLinkTitles($field->value);
 			return $field;
