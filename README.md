@@ -2,6 +2,17 @@
 
 Kirby Helpers is a collection of useful helper functions for Kirby CMS.
 
+## Features
+
+- 🎨 **CSS Helpers** - Lazy loading, conditional loading by template or block type
+- 🔗 **Link Helpers** - Automatic link labels, external link detection, mailto builders
+- 📝 **String Helpers** - Prefix/suffix utilities for consistent formatting
+- 🌐 **Translation Helpers** - Translation status checking, filtering, and badges
+- ♿️ **Accessibility** - SVG accessibility attributes, automatic link titles
+- 🎯 **Block Helpers** - Extract and analyze block types for conditional styling
+- ⚡️ **Vite Integration** - Dev mode detection, asset inlining
+- 🏗️ **HTML Utilities** - Heading level validation and manipulation
+
 ## Installation via Composer
 To install Kirby Helpers via Composer, run the following command:
 
@@ -25,6 +36,7 @@ cssLazy(vite()->asset('styles/carousel.scss'), true);
 Load CSS only if a specific block type is used on the page.
 
 ```php
+$pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
 cssIfBlock('assets/css/carousel.css', 'carousel', $pageBlocks);
 cssIfBlock(vite()->asset('styles/carousel.scss'), 'carousel', $pageBlocks, true);
 ```
@@ -92,6 +104,21 @@ Validate a heading level string. Throws exception if invalid.
 ```php
 validateHeadingLevel('h2'); // OK
 validateHeadingLevel('h7'); // Throws InvalidArgumentException
+```
+
+---
+
+### Block Helpers
+
+#### `getUsedBlockTypes(Blocks|array $blocks): array`
+Extract all used block types from a Blocks object or array. Useful for conditional CSS loading.
+
+```php
+$pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
+// ['heading', 'text', 'image', 'gallery']
+
+// Use with cssIfBlock
+cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
 ```
 
 ---
@@ -194,13 +221,29 @@ inlineViteAsset(['app.js', 'vendor.js'], 'script');
 ## Field Methods
 
 ### `ensureLeft(string $prefix): string`
+Ensure a field value starts with a specific prefix. Returns the field for chaining.
 ```php
-$page->myField()->ensureLeft('https://');
+$page->url()->ensureLeft('https://')->value();
 ```
 
 ### `ensureRight(string $suffix): string`
+Ensure a field value ends with a specific suffix. Returns the field for chaining.
 ```php
-$page->myField()->ensureRight('/');
+$page->path()->ensureRight('/')->value();
+```
+
+### `ensureHashed(): string`
+Ensure a field value starts with a hash character (#). Useful for anchor links. Returns the field for chaining.
+```php
+$page->anchor()->ensureHashed()->value();
+// 'section-1' becomes '#section-1'
+```
+
+### `autoLinkTitles(): string`
+Automatically add accessible title attributes to all links in HTML content. Detects internal pages, files, email, phone, and external links. Returns the field for chaining.
+```php
+$page->text()->kirbytext()->autoLinkTitles();
+// Adds appropriate title attributes to all <a> tags
 ```
 
 ---
