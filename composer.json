@@ -5,6 +5,17 @@
 	"version": "1.1.0",
 	"license": "MIT",
 	"homepage": "https://github.com/timnarr/kirby-helpers",
+	"keywords": [
+		"kirby",
+		"kirby-cms",
+		"kirby-plugin",
+		"helper",
+		"helpers",
+		"utilities",
+		"accessibility",
+		"translations",
+		"vite"
+	],
 	"authors": [
 		{
 			"name": "Tim Narr",
@@ -12,6 +23,11 @@
 			"homepage": "https://tim-narr.com"
 		}
 	],
+	"support": {
+		"docs": "https://github.com/timnarr/kirby-helpers/blob/main/README.md",
+		"source": "https://github.com/timnarr/kirby-helpers",
+		"issues": "https://github.com/timnarr/kirby-helpers/issues"
+	},
 	"require": {
 		"php": "^8.2",
 		"getkirby/composer-installer": "^1.2"
