@@ -45,10 +45,10 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			$codes = $this->getMissingTranslations();
 
 			if (empty($codes)) {
-				return '<span class="k-info-badge" data-theme="green">All translated</span>';
+				return '<span class="k-info-badge" data-theme="green">' . t('translation_status_all') . '</span>';
 			}
 
-			return '<span class="k-info-badge" data-theme="red">Missing: ' . strtoupper(implode(', ', $codes)) . '</span>';
+			return '<span class="k-info-badge" data-theme="red">' . tt('translation_status_missing', ['codes' => strtoupper(implode(', ', $codes))]) . '</span>';
 		},
 	],
 	'translations' => [
@@ -59,6 +59,8 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			'link_label_external' => 'External link: { url } (Opens new tab)',
 			'link_label_mail' => 'Send email to: { mail } (Opens new window of your email program)',
 			'link_label_tel' => 'Call phone number: { tel } (Opens new window/program)',
+			'translation_status_missing' => 'Missing: { codes }',
+			'translation_status_all' => 'Translated',
 		],
 		'de' => [
 			'link_label_internal_home' => 'Link zur Startseite: { title }',
@@ -67,6 +69,8 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			'link_label_external' => 'Externer Link: { url } (Öffnet neuen Tab)',
 			'link_label_mail' => 'E-Mail schreiben an: { mail } (Öffnet neues Fenster Ihres E-Mail Programms)',
 			'link_label_tel' => 'Telefonnummer anrufen: { tel } (Öffnet neues Fenster/Programm)',
+			'translation_status_missing' => 'Fehlt: { codes }',
+			'translation_status_all' => 'Übersetzt',
 		],
 	],
 ]);
