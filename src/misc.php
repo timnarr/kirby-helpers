@@ -102,7 +102,7 @@ if (!function_exists('setBlankIfExternal')) {
 /**
  * Generate a link label based on the type and data provided.
  *
- * @param string $type The type of link (e.g., 'internal', 'document', 'external', 'mail', 'tel', 'custom').
+ * @param string $type The type of link (e.g., 'internal', 'document', 'external', 'mail', 'tel', 'custom', 'anchor').
  * @param mixed $data The data used to generate the label.
  * @return string The generated link label.
  * @throws InvalidArgumentException If an invalid type is provided or if data for certain types does not meet the expected type.
@@ -111,6 +111,9 @@ if (!function_exists('linkLabel')) {
 	function linkLabel(string $type, string|Page|File $data): string
 	{
 		return match ($type) {
+			'anchor' => is_string($data)
+				? tt('link_label_anchor', ['anchor' => $data])
+				: throw new InvalidArgumentException('[kirby-helpers] Data for "anchor" type must be a string, ' . get_debug_type($data) . ' given.'),
 			'internal' => match (true) {
 				!($data instanceof Page) => throw new InvalidArgumentException(
 					'[kirby-helpers] Data for "internal" type must be an instance of Page, ' . get_debug_type($data) . ' given.'
@@ -395,10 +398,10 @@ if (!function_exists('getUsedBlockTypes')) {
 }
 
 /**
- * Extract all used block types from a Layouts object or array of layouts.
+ * Extract all used block types from a Layouts, Layout object or array of layouts.
  * Iterates through all layouts, their columns, and blocks to find all used block types.
  *
- * @param \Kirby\Cms\Layouts|array $layouts The layouts to analyze.
+ * @param \Kirby\Cms\Layouts|\Kirby\Cms\Layout|array $layouts The layouts to analyze.
  * @return array An array of block type strings.
  *
  * @example
@@ -410,9 +413,14 @@ if (!function_exists('getUsedBlockTypes')) {
  * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
  */
 if (!function_exists('getUsedBlockTypesFromLayouts')) {
-	function getUsedBlockTypesFromLayouts(\Kirby\Cms\Layouts|array $layouts): array
+	function getUsedBlockTypesFromLayouts(\Kirby\Cms\Layouts|\Kirby\Cms\Layout|array $layouts): array
 	{
 		$types = [];
+
+		// Convert single Layout to array for uniform handling
+		if ($layouts instanceof \Kirby\Cms\Layout) {
+			$layouts = [$layouts];
+		}
 
 		foreach ($layouts as $layout) {
 			foreach ($layout->columns() as $column) {

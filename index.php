@@ -53,6 +53,7 @@ Kirby::plugin('timnarr/kirby-helpers', [
 	],
 	'translations' => [
 		'en' => [
+			'link_label_anchor' => 'Link to anchor: { anchor }',
 			'link_label_internal_home' => 'Link to homepage: { title }',
 			'link_label_internal' => 'Link to page: { title }',
 			'link_label_document' => 'Download file: { filename }',
@@ -63,6 +64,7 @@ Kirby::plugin('timnarr/kirby-helpers', [
 			'translation_status_all' => 'Translated',
 		],
 		'de' => [
+			'link_label_anchor' => 'Link zu Anker: { anchor }',
 			'link_label_internal_home' => 'Link zur Startseite: { title }',
 			'link_label_internal' => 'Link zur Seite: { title }',
 			'link_label_document' => 'Datei herunterladen: { filename }',
