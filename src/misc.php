@@ -372,34 +372,6 @@ if (!function_exists('buildMailtoLink')) {
 }
 
 /**
- * Extract all used block types from a Blocks object or array of blocks.
- * Useful for conditional CSS loading based on which blocks are used on a page.
- *
- * @param \Kirby\Cms\Blocks|array $blocks The blocks to analyze.
- * @return array An array of block type strings.
- *
- * @example
- * $blockTypes = getUsedBlockTypes($page->text()->toBlocks());
- * // returns ['heading', 'text', 'image', 'gallery']
- *
- * @example with cssIfBlock
- * $pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
- * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
- */
-if (!function_exists('getUsedBlockTypes')) {
-	function getUsedBlockTypes(\Kirby\Cms\Blocks|array $blocks): array
-	{
-		$types = [];
-
-		foreach ($blocks as $block) {
-			$types[] = $block->type();
-		}
-
-		return $types;
-	}
-}
-
-/**
  * Extract all used block types from a Layouts, Layout object or array of layouts.
  * Iterates through all layouts, their columns, and blocks to find all used block types.
  *
@@ -432,7 +404,7 @@ if (!function_exists('getUsedBlockTypesFromLayouts')) {
 			}
 		}
 
-		return $types;
+		return array_values(array_unique($types));
 	}
 }
 

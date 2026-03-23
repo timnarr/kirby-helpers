@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\Blocks;
 use Kirby\Cms\Html;
 
 /**
@@ -36,19 +37,23 @@ if (!function_exists('cssLazy')) {
  *
  * @param string $file The CSS file path.
  * @param string $blockType The block type to check.
- * @param array $usedBlockTypes The array of used block types.
+ * @param Blocks|array $blocks The Blocks object or array of used block type strings.
  * @param bool $lazy Optional. If true, load the CSS file lazily.
  *
  * @example
- * cssIfBlock('assets/css/carousel.css', 'carousel', $pageBlocks, true);
+ * cssIfBlock('assets/css/carousel.css', 'carousel', $page->text()->toBlocks(), true);
  *
  * @example with vite
- * cssIfBlock(vite()->asset('styles/carousel.scss'), 'carousel', $pageBlocks, true);
+ * cssIfBlock(vite()->asset('styles/carousel.scss'), 'carousel', $page->text()->toBlocks(), true);
  */
 if (!function_exists('cssIfBlock')) {
-	function cssIfBlock(string $file, string $blockType, array $usedBlockTypes, bool $lazy = false): void
+	function cssIfBlock(string $file, string $blockType, Blocks|array $blocks, bool $lazy = false): void
 	{
-		if (in_array($blockType, $usedBlockTypes)) {
+		$found = $blocks instanceof Blocks
+			? $blocks->hasType($blockType)
+			: in_array($blockType, $blocks);
+
+		if ($found) {
 			if ($lazy) {
 				cssLazy($file);
 			} else {
