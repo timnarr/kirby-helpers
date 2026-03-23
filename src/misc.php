@@ -181,16 +181,9 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 			iterator_to_array($ignoredPages)
 		);
 
-		// Check if the current page is in one of the ignored lists
-		if (
-			in_array($page->template(), $ignoredTemplates) ||
+		return in_array($page->intendedTemplate()->name(), $ignoredTemplates) ||
 			in_array($page->slug(), $ignoredSlugs) ||
-			in_array($page->uuid()->id(), $ignoredPagesIds)
-		) {
-			return true;
-		}
-
-		return false;
+			in_array($page->uuid()->id(), $ignoredPagesIds);
 	}
 }
 
