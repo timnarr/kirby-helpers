@@ -19,6 +19,9 @@ if (!function_exists('isViteDevMode')) {
 
 		if ($devMode === null) {
 			$manifestPath = kirby()->option('timnarr.kirby-helpers.vite.manifestPath');
+			if (is_callable($manifestPath)) {
+				$manifestPath = $manifestPath();
+			}
 			$devMode = !F::exists($manifestPath);
 		}
 

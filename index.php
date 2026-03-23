@@ -5,7 +5,7 @@ use Kirby\Content\Field;
 Kirby::plugin('timnarr/kirby-helpers', [
 	'options' => [
 		'vite' => [
-			'manifestPath' => kirby()->root() . '/build/manifest.json',
+			'manifestPath' => fn () => kirby()->root() . '/build/manifest.json',
 		],
 	],
 	'fieldMethods' => [
