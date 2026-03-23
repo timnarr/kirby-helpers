@@ -32,13 +32,16 @@ cssLazy('assets/css/carousel.css');
 cssLazy(vite()->asset('styles/carousel.scss'), true);
 ```
 
-#### `cssIfBlock(string $file, string $blockType, array $usedBlockTypes, bool $lazy = false): void`
+#### `cssIfBlock(string $file, string $blockType, Blocks|array $blocks, bool $lazy = false): void`
 Load CSS only if a specific block type is used on the page.
 
 ```php
-$pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
-cssIfBlock('assets/css/carousel.css', 'carousel', $pageBlocks);
-cssIfBlock(vite()->asset('styles/carousel.scss'), 'carousel', $pageBlocks, true);
+$blocks = $page->text()->toBlocks();
+cssIfBlock('assets/css/carousel.css', 'carousel', $blocks);
+cssIfBlock(vite()->asset('styles/carousel.scss'), 'carousel', $blocks, true);
+
+// Also accepts a pre-built array of type strings (e.g. from getUsedBlockTypesFromLayouts())
+cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlockTypes);
 ```
 
 #### `cssIfTemplate(string $file, string|array $template, bool $lazy = false): void`
@@ -110,15 +113,15 @@ validateHeadingLevel('h7'); // Throws InvalidArgumentException
 
 ### Block Helpers
 
-#### `getUsedBlockTypes(Blocks|array $blocks): array`
-Extract all used block types from a Blocks object or array. Useful for conditional CSS loading.
+#### `getUsedBlockTypesFromLayouts(Layouts|Layout|array $layouts): array`
+Extract all unique block types from a Layouts or Layout object. Useful for conditional CSS loading when working with layout fields.
 
 ```php
-$pageBlocks = getUsedBlockTypes($page->text()->toBlocks());
+$blockTypes = getUsedBlockTypesFromLayouts($page->sections()->toLayouts());
 // ['heading', 'text', 'image', 'gallery']
 
 // Use with cssIfBlock
-cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
+cssIfBlock('assets/css/gallery.css', 'gallery', $blockTypes);
 ```
 
 ---
@@ -271,10 +274,10 @@ if ($page->hasTranslations()) {
 $translations = $page->getTranslations(); // ['de', 'fr']
 ```
 
-### `missingTranslationCodes(): array`
+### `getMissingTranslations(): array`
 Get an array of language codes for which the page translation does not exist.
 ```php
-$missing = $page->missingTranslationCodes(); // ['de', 'fr']
+$missing = $page->getMissingTranslations(); // ['de', 'fr']
 ```
 
 ### `missingTranslationsBadge(): string`
@@ -293,13 +296,14 @@ The following options are available for customization:
 
 | Option | Default | Type | Description |
 | ------ | ------- | ---- | ----------- |
-| `vite.manifestPath` | `kirby()->root() . '/build/manifest.json'` | string | Path to vites manifest file to determine dev mode. Used by `isViteDevMode()` |
+| `vite.manifestPath` | `fn() => kirby()->root() . '/build/manifest.json'` | string\|Closure | Path to Vite's manifest file to determine dev mode. Used by `isViteDevMode()` |
 
 ## Translations
 Translations are required for the labels returned by the `linkLabel()` function. This plugin provides translations for English and German. The following translation keys are available for customization:
 
 | Key | Default |
 | --- | ------- |
+| `link_label_anchor` | `Link to anchor: { anchor }` |
 | `link_label_internal_home` | `Link to homepage: { title }` |
 | `link_label_internal` | `Link to page: { title }` |
 | `link_label_document` | `Download file: { filename }` |
