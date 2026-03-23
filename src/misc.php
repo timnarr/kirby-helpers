@@ -341,32 +341,34 @@ if (!function_exists('readAccessible')) {
  * buildMailtoLink('test@example.com', 'Hello', 'Line 1\nLine 2')
  * // returns mailto link with proper line break encoding
  */
-function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
-{
-	$mailto = 'mailto:' . Str::encode($email);
+if (!function_exists('buildMailtoLink')) {
+	function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
+	{
+		$mailto = 'mailto:' . Str::encode($email);
 
-	$params = [];
+		$params = [];
 
-	// Add subject if provided
-	if (!empty($subject)) {
-		$params[] = 'subject=' . rawurlencode($subject);
+		// Add subject if provided
+		if (!empty($subject)) {
+			$params[] = 'subject=' . rawurlencode($subject);
+		}
+
+		// Add body if provided
+		if (!empty($body)) {
+			// Convert literal \n to actual line breaks
+			$body = str_replace('\\n', "\n", $body);
+			// Normalize line breaks to \r\n (CRLF) for email compatibility
+			$body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
+			$params[] = 'body=' . rawurlencode($body);
+		}
+
+		// Append parameters if any exist
+		if (!empty($params)) {
+			$mailto .= '?' . implode('&', $params);
+		}
+
+		return $mailto;
 	}
-
-	// Add body if provided
-	if (!empty($body)) {
-		// Convert literal \n to actual line breaks
-		$body = str_replace('\\n', "\n", $body);
-		// Normalize line breaks to \r\n (CRLF) for email compatibility
-		$body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
-		$params[] = 'body=' . rawurlencode($body);
-	}
-
-	// Append parameters if any exist
-	if (!empty($params)) {
-		$mailto .= '?' . implode('&', $params);
-	}
-
-	return $mailto;
 }
 
 /**
