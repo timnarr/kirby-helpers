@@ -70,7 +70,7 @@ if (!function_exists('cssIfTemplate')) {
 	function cssIfTemplate(string $file, string|array $template, bool $lazy = false): void
 	{
 		$templates = is_array($template) ? $template : [$template];
-		$currentTemplate = page()->template();
+		$currentTemplate = page()->intendedTemplate()->name();
 
 		if (in_array($currentTemplate, $templates, true)) {
 			if ($lazy) {
