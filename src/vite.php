@@ -45,7 +45,7 @@ if (!function_exists('inlineViteAsset')) {
 			foreach ($files as $file) {
 				$filePath = vite()->asset($file);
 				if ($type === 'stylesheet') {
-					echo Html::tag(name: 'link', attr: ['rel' => 'stylesheet', 'href' => $filePath]);
+					echo Html::css(url: $filePath);
 				} elseif ($type === 'script') {
 					echo Html::tag(name: 'script', attr: ['type' => 'module', 'src' => $filePath]);
 				}
