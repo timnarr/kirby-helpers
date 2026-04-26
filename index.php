@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\Html;
 use Kirby\Content\Field;
 
 Kirby::plugin('timnarr/kirby-helpers', [
@@ -48,7 +49,7 @@ Kirby::plugin('timnarr/kirby-helpers', [
 				return '<span class="k-info-badge" data-theme="green">' . t('translation_status_all') . '</span>';
 			}
 
-			return '<span class="k-info-badge" data-theme="red">' . tt('translation_status_missing', ['codes' => strtoupper(implode(', ', $codes))]) . '</span>';
+			return '<span class="k-info-badge" data-theme="red">' . tt('translation_status_missing', ['codes' => Html::encode(strtoupper(implode(', ', $codes)))]) . '</span>';
 		},
 	],
 	'translations' => [

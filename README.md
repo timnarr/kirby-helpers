@@ -128,7 +128,7 @@ cssIfBlock('assets/css/gallery.css', 'gallery', $blockTypes);
 
 ### Link Helpers
 
-#### `setBlankIfExternal(string $link, bool $dontReturnHref = false): array`
+#### `setBlankIfExternal(string $link, bool $omitHref = false): array`
 Determine if a link is external and return appropriate attributes (target="_blank" for external links).
 
 ```php
@@ -139,7 +139,7 @@ setBlankIfExternal('mailto:test@example.com');
 // ['href' => 'mailto:test@example.com']
 ```
 
-#### `linkLabel(string $type, string|Page|File $data): string`
+#### `linkLabel(string $type, string|Page|File|\Closure $data): string`
 Generate accessible link labels for different link types.
 
 ```php

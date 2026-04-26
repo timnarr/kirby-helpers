@@ -2,6 +2,8 @@
 
 use Kirby\Cms\File;
 use Kirby\Cms\Html;
+use Kirby\Cms\Layout;
+use Kirby\Cms\Layouts;
 use Kirby\Cms\Page;
 use Kirby\Cms\Pages;
 use Kirby\Cms\Url;
@@ -66,10 +68,7 @@ if (!function_exists('incrementHeadingLevel')) {
 	{
 		validateHeadingLevel($level);
 
-		// Extract the numeric level
 		$currentLevel = (int)substr($level, 1);
-
-		// Calculate new level and clamp between 1 and 6
 		$newLevel = max(1, min(6, $currentLevel + $steps));
 
 		return 'h' . $newLevel;
@@ -80,21 +79,26 @@ if (!function_exists('incrementHeadingLevel')) {
  * Determine if a link should open in a new tab (if external) and return an array of attributes.
  *
  * @param string $link The URL link.
- * @param bool $dontReturnHref Optional. If true, the href attribute will be null.
+ * @param bool $omitHref Optional. If true, the href attribute will be null.
  * @return array The attributes for the link.
  */
 if (!function_exists('setBlankIfExternal')) {
-	function setBlankIfExternal(string $link, bool $dontReturnHref = false): array
+	function setBlankIfExternal(string $link, bool $omitHref = false): array
 	{
-		$internalPatterns = ['mailto:', 'tel:', 'sms:'];
+		$isInternal = str_starts_with($link, Url::home())
+			|| str_contains($link, 'mailto:')
+			|| str_contains($link, 'tel:')
+			|| str_contains($link, 'sms:');
 
-		$isInternal = array_filter($internalPatterns, fn ($pattern) => str_contains($link, $pattern)) ||
-			str_starts_with($link, Url::home());
+		$attrs = [];
+		if (!$omitHref) {
+			$attrs['href'] = $link;
+		}
+		if (!$isInternal) {
+			$attrs['target'] = '_blank';
+		}
 
-		return [
-			...(!$dontReturnHref ? ['href' => $link] : []),
-			...(!$isInternal ? ['target' => '_blank'] : []),
-		];
+		return $attrs;
 	}
 }
 
@@ -103,12 +107,12 @@ if (!function_exists('setBlankIfExternal')) {
  * Generate a link label based on the type and data provided.
  *
  * @param string $type The type of link (e.g., 'internal', 'document', 'external', 'mail', 'tel', 'custom', 'anchor').
- * @param mixed $data The data used to generate the label.
+ * @param string|Page|File|\Closure $data The data used to generate the label.
  * @return string The generated link label.
  * @throws InvalidArgumentException If an invalid type is provided or if data for certain types does not meet the expected type.
  */
 if (!function_exists('linkLabel')) {
-	function linkLabel(string $type, string|Page|File $data): string
+	function linkLabel(string $type, string|Page|File|\Closure $data): string
 	{
 		return match ($type) {
 			'anchor' => is_string($data)
@@ -138,9 +142,11 @@ if (!function_exists('linkLabel')) {
 				? tt('link_label_tel', ['tel' => Str::encode($data)])
 				: throw new InvalidArgumentException('[kirby-helpers] Data for "tel" type must be a string, ' . get_debug_type($data) . ' given.'),
 
-			'custom' => is_string($data) || is_callable($data)
-				? (is_callable($data) ? $data() : $data)
-				: throw new InvalidArgumentException('[kirby-helpers] Data for "custom" type must be a string or a callable, ' . get_debug_type($data) . ' given.'),
+			'custom' => $data instanceof \Closure
+				? $data()
+				: (is_string($data)
+					? $data
+					: throw new InvalidArgumentException('[kirby-helpers] Data for "custom" type must be a string or a Closure, ' . get_debug_type($data) . ' given.')),
 
 			default => throw new InvalidArgumentException('[kirby-helpers] Invalid type provided for linkLabel function: ' . $type),
 		};
@@ -168,22 +174,17 @@ if (!function_exists('linkLabel')) {
 if (!function_exists('shouldIgnorePageFromCache')) {
 	function shouldIgnorePageFromCache(Page $page, Pages|null $ignoredPages, array $ignoredSlugs = [], array $ignoredTemplates = []): bool
 	{
-		$defaultIgnoredSlugs = [];
-		$defaultIgnoredTemplates = ['error'];
-
-		$ignoredSlugs = array_merge($defaultIgnoredSlugs, $ignoredSlugs);
-		$ignoredTemplates = array_merge($defaultIgnoredTemplates, $ignoredTemplates);
-
+		$ignoredTemplates = array_merge(['error'], $ignoredTemplates);
 		$ignoredPages ??= new Pages([]);
 
-		$ignoredPagesIds = array_map(
-			fn ($page) => $page->uuid()->id(),
+		$ignoredPageIds = array_map(
+			fn ($p) => $p->uuid()->id(),
 			iterator_to_array($ignoredPages)
 		);
 
-		return in_array($page->intendedTemplate()->name(), $ignoredTemplates) ||
-			in_array($page->slug(), $ignoredSlugs) ||
-			in_array($page->uuid()->id(), $ignoredPagesIds);
+		return in_array($page->intendedTemplate()->name(), $ignoredTemplates)
+			|| in_array($page->slug(), $ignoredSlugs)
+			|| in_array($page->uuid()->id(), $ignoredPageIds);
 	}
 }
 
@@ -198,26 +199,22 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 if (!function_exists('getAvailableTranslations')) {
 	function getAvailableTranslations(Page $page): array
 	{
-		$languages = kirby()->languages();
-		$currentLanguageCode = kirby()->language()->code();
+		if (!kirby()->multilang()) {
+			return [];
+		}
 
-		$availableTranslations = [];
+		$currentCode = kirby()->language()->code();
+		$translations = [];
 
-		foreach ($languages as $language) {
-			$languageCode = $language->code();
+		foreach (kirby()->languages() as $language) {
+			$code = $language->code();
 
-			// Skip the current language
-			if ($languageCode === $currentLanguageCode) {
-				continue;
-			}
-
-			// Check if translation exists for this language code
-			if ($page->translation($languageCode)->exists()) {
-				$availableTranslations[] = $languageCode;
+			if ($code !== $currentCode && $page->translation($code)->exists()) {
+				$translations[] = $code;
 			}
 		}
 
-		return $availableTranslations;
+		return $translations;
 	}
 }
 
@@ -231,16 +228,15 @@ if (!function_exists('getAvailableTranslations')) {
 if (!function_exists('getMissingTranslations')) {
 	function getMissingTranslations(Page $page): array
 	{
-		$languages = kirby()->languages();
-		$missingTranslations = [];
+		$missing = [];
 
-		foreach ($languages as $language) {
+		foreach (kirby()->languages() as $language) {
 			if (!$page->translation($language->code())->exists()) {
-				$missingTranslations[] = $language->code();
+				$missing[] = $language->code();
 			}
 		}
 
-		return $missingTranslations;
+		return $missing;
 	}
 }
 
@@ -264,10 +260,8 @@ if (!function_exists('readAccessible')) {
 
 			$svgContent = $file->read();
 
-			// Validate and sanitize SVG content to prevent XSS attacks
 			$svgContent = Sane::sanitize($svgContent, 'svg');
 
-			// Try to get values from custom fields if not provided
 			if (empty($title) && $file->svgTitle()->isNotEmpty()) {
 				$title = $file->svgTitle()->value();
 			}
@@ -276,33 +270,24 @@ if (!function_exists('readAccessible')) {
 				$description = $file->svgDescription()->value();
 			}
 
-			// Check if marked as decorative in custom field
-			if ($file->svgDecorative()->toBool()) {
-				$isDecorative = true;
-			}
+			$isDecorative = $isDecorative || $file->svgDecorative()->toBool();
 
 			if ($isDecorative) {
-				$svgContent = str_replace(
-					'<svg',
-					'<svg aria-hidden="true"',
-					$svgContent
-				);
+				$svgContent = preg_replace('/<svg/', '<svg aria-hidden="true"', $svgContent, 1);
 			} else {
 				$uniqueId = uniqid('svg-');
 				$finalTitle = $title ?: $file->alt()->or($file->name())->value();
 
-				// aria-labelledby="uniqueTitleID uniqueDescID" (use the title and desc ID’s) – both title and description are included in aria-labelledby because it has better screen-reader support than aria-describedby
-				$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title"';
-				if ($description) {
-					$ariaAttributes = 'role="img" aria-labelledby="' . $uniqueId . '-title ' . $uniqueId . '-desc"';
-				}
+				// aria-labelledby with both title and desc IDs has better screen-reader support than aria-describedby
+				$labelledBy = $uniqueId . '-title' . ($description ? ' ' . $uniqueId . '-desc' : '');
+				$ariaAttributes = 'role="img" aria-labelledby="' . $labelledBy . '"';
 
-				$svgContent = str_replace('<svg', '<svg ' . $ariaAttributes, $svgContent);
+				$svgContent = preg_replace('/<svg/', '<svg ' . $ariaAttributes, $svgContent, 1);
 
 				$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
 				$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
 
-				$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent);
+				$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent, 1);
 			}
 
 			return $svgContent;
@@ -341,21 +326,17 @@ if (!function_exists('buildMailtoLink')) {
 
 		$params = [];
 
-		// Add subject if provided
 		if (!empty($subject)) {
 			$params[] = 'subject=' . rawurlencode($subject);
 		}
 
-		// Add body if provided
 		if (!empty($body)) {
-			// Convert literal \n to actual line breaks
 			$body = str_replace('\\n', "\n", $body);
-			// Normalize line breaks to \r\n (CRLF) for email compatibility
+			// Normalize line breaks to CRLF for email compatibility
 			$body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
 			$params[] = 'body=' . rawurlencode($body);
 		}
 
-		// Append parameters if any exist
 		if (!empty($params)) {
 			$mailto .= '?' . implode('&', $params);
 		}
@@ -380,12 +361,11 @@ if (!function_exists('buildMailtoLink')) {
  * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
  */
 if (!function_exists('getUsedBlockTypesFromLayouts')) {
-	function getUsedBlockTypesFromLayouts(\Kirby\Cms\Layouts|\Kirby\Cms\Layout|array $layouts): array
+	function getUsedBlockTypesFromLayouts(Layouts|Layout|array $layouts): array
 	{
 		$types = [];
 
-		// Convert single Layout to array for uniform handling
-		if ($layouts instanceof \Kirby\Cms\Layout) {
+		if ($layouts instanceof Layout) {
 			$layouts = [$layouts];
 		}
 
@@ -421,12 +401,10 @@ if (!function_exists('autoLinkTitles')) {
 			function ($matches) {
 				$attributes = $matches[1];
 
-				// Skip if title attribute already exists
 				if (preg_match('/\btitle\s*=/i', $attributes)) {
 					return $matches[0];
 				}
 
-				// Extract href attribute
 				if (!preg_match('/\bhref\s*=\s*(["\'])(.*?)\1/i', $attributes, $hrefMatch)) {
 					return $matches[0];
 				}
@@ -434,35 +412,27 @@ if (!function_exists('autoLinkTitles')) {
 				$href = $hrefMatch[2];
 				$title = null;
 
-				// Detect link type and generate title
 				if (preg_match('#^/@/page/([a-z0-9]+)#i', $href, $uuidMatch)) {
-					// Internal page link via UUID
 					try {
 						$page = Uuid::for('page://' . $uuidMatch[1])?->model();
 						if ($page instanceof Page) {
 							$title = linkLabel('internal', $page);
 						}
 					} catch (\Exception $e) {
-						// Skip if page not found
 					}
 				} elseif (preg_match('#^/@/file/([a-z0-9]+)#i', $href, $uuidMatch)) {
-					// File/document link via UUID
 					try {
 						$file = Uuid::for('file://' . $uuidMatch[1])?->model();
 						if ($file instanceof File) {
 							$title = linkLabel('document', $file);
 						}
 					} catch (\Exception $e) {
-						// Skip if file not found
 					}
 				} elseif (preg_match('/^mailto:(.+)/i', $href, $mailMatch)) {
-					// Email link
 					$title = linkLabel('mail', $mailMatch[1]);
 				} elseif (preg_match('/^tel:(.+)/i', $href, $telMatch)) {
-					// Phone link
 					$title = linkLabel('tel', $telMatch[1]);
 				} elseif (preg_match('#^https?://#i', $href)) {
-					// External URL (check if it's not the same domain)
 					$currentHost = parse_url(Url::home(), PHP_URL_HOST);
 					$linkHost = parse_url($href, PHP_URL_HOST);
 
@@ -471,10 +441,8 @@ if (!function_exists('autoLinkTitles')) {
 					}
 				}
 
-				// Add title attribute if we generated one
 				if ($title !== null) {
-					$escapedTitle = Html::encode($title);
-					return '<a ' . trim($attributes) . ' title="' . $escapedTitle . '">';
+					return '<a ' . trim($attributes) . ' title="' . Html::encode($title) . '">';
 				}
 
 				return $matches[0];

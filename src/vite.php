@@ -64,7 +64,7 @@ if (!function_exists('inlineViteAsset')) {
 					}
 
 					$fileContent = F::read($realPath);
-					$content .= $fileContent;
+					$content .= $fileContent . "\n";
 				} catch (Exception $e) {
 					throw new InvalidArgumentException(
 						"[kirby-helpers] Failed to read asset: {$file}. " . $e->getMessage()

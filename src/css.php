@@ -53,12 +53,14 @@ if (!function_exists('cssIfBlock')) {
 			? $blocks->hasType($blockType)
 			: in_array($blockType, $blocks);
 
-		if ($found) {
-			if ($lazy) {
-				cssLazy($file);
-			} else {
-				echo Html::css(url: $file);
-			}
+		if (!$found) {
+			return;
+		}
+
+		if ($lazy) {
+			cssLazy($file);
+		} else {
+			echo Html::css(url: $file);
 		}
 	}
 }
@@ -77,12 +79,14 @@ if (!function_exists('cssIfTemplate')) {
 		$templates = is_array($template) ? $template : [$template];
 		$currentTemplate = page()->intendedTemplate()->name();
 
-		if (in_array($currentTemplate, $templates, true)) {
-			if ($lazy) {
-				cssLazy($file);
-			} else {
-				echo Html::css(url: $file);
-			}
+		if (!in_array($currentTemplate, $templates, true)) {
+			return;
+		}
+
+		if ($lazy) {
+			cssLazy($file);
+		} else {
+			echo Html::css(url: $file);
 		}
 	}
 }
