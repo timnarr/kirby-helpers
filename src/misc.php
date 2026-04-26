@@ -85,10 +85,10 @@ if (!function_exists('incrementHeadingLevel')) {
 if (!function_exists('setBlankIfExternal')) {
 	function setBlankIfExternal(string $link, bool $omitHref = false): array
 	{
-		$isInternal = str_starts_with($link, Url::home())
-			|| str_contains($link, 'mailto:')
-			|| str_contains($link, 'tel:')
-			|| str_contains($link, 'sms:');
+		$isInternal = str_starts_with($link, Url::home()) ||
+			str_contains($link, 'mailto:') ||
+			str_contains($link, 'tel:') ||
+			str_contains($link, 'sms:');
 
 		$attrs = [];
 		if (!$omitHref) {
@@ -182,9 +182,9 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 			iterator_to_array($ignoredPages)
 		);
 
-		return in_array($page->intendedTemplate()->name(), $ignoredTemplates)
-			|| in_array($page->slug(), $ignoredSlugs)
-			|| in_array($page->uuid()->id(), $ignoredPageIds);
+		return in_array($page->intendedTemplate()->name(), $ignoredTemplates) ||
+			in_array($page->slug(), $ignoredSlugs) ||
+			in_array($page->uuid()->id(), $ignoredPageIds);
 	}
 }
 
