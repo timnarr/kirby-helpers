@@ -242,7 +242,48 @@ if (!function_exists('getMissingTranslations')) {
 
 
 /**
- * Reads the SVG content and adds accessibility attributes based on custom fields.
+ * Sanitizes SVG markup and injects accessibility attributes: either `aria-hidden` for decorative
+ * SVGs, or a `<title>`/`<desc>` pair wired up via `aria-labelledby`.
+ *
+ * @param string $svgContent The raw SVG markup.
+ * @param string $title The title for the SVG (optional).
+ * @param string $description The description for the SVG (optional).
+ * @param bool $isDecorative Whether the SVG is decorative (optional).
+ * @param string $fallbackTitle Title to fall back to when non-decorative and no title was given.
+ * @return string The SVG markup with accessibility attributes applied.
+ */
+if (!function_exists('addSvgAccessibilityAttributes')) {
+	function addSvgAccessibilityAttributes(
+		string $svgContent,
+		string $title = '',
+		string $description = '',
+		bool $isDecorative = false,
+		string $fallbackTitle = ''
+	): string {
+		$svgContent = Sane::sanitize($svgContent, 'svg');
+
+		if ($isDecorative) {
+			return preg_replace('/<svg/', '<svg aria-hidden="true"', $svgContent, 1);
+		}
+
+		$uniqueId = uniqid('svg-');
+		$finalTitle = $title ?: $fallbackTitle;
+
+		// aria-labelledby with both title and desc IDs has better screen-reader support than aria-describedby
+		$labelledBy = $uniqueId . '-title' . ($description ? ' ' . $uniqueId . '-desc' : '');
+		$ariaAttributes = 'role="img" aria-labelledby="' . $labelledBy . '"';
+
+		$svgContent = preg_replace('/<svg/', '<svg ' . $ariaAttributes, $svgContent, 1);
+
+		$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
+		$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
+
+		return preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent, 1);
+	}
+}
+
+/**
+ * Reads the SVG content of a Kirby file and adds accessibility attributes based on custom fields.
  *
  * @param File $file The file object representing the SVG.
  * @param string $title The title for the SVG (optional).
@@ -258,10 +299,6 @@ if (!function_exists('readAccessible')) {
 				return $file->read();
 			}
 
-			$svgContent = $file->read();
-
-			$svgContent = Sane::sanitize($svgContent, 'svg');
-
 			if (empty($title) && $file->svgTitle()->isNotEmpty()) {
 				$title = $file->svgTitle()->value();
 			}
@@ -272,25 +309,13 @@ if (!function_exists('readAccessible')) {
 
 			$isDecorative = $isDecorative || $file->svgDecorative()->toBool();
 
-			if ($isDecorative) {
-				$svgContent = preg_replace('/<svg/', '<svg aria-hidden="true"', $svgContent, 1);
-			} else {
-				$uniqueId = uniqid('svg-');
-				$finalTitle = $title ?: $file->alt()->or($file->name())->value();
-
-				// aria-labelledby with both title and desc IDs has better screen-reader support than aria-describedby
-				$labelledBy = $uniqueId . '-title' . ($description ? ' ' . $uniqueId . '-desc' : '');
-				$ariaAttributes = 'role="img" aria-labelledby="' . $labelledBy . '"';
-
-				$svgContent = preg_replace('/<svg/', '<svg ' . $ariaAttributes, $svgContent, 1);
-
-				$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
-				$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
-
-				$svgContent = preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent, 1);
-			}
-
-			return $svgContent;
+			return addSvgAccessibilityAttributes(
+				$file->read(),
+				$title,
+				$description,
+				$isDecorative,
+				$file->alt()->or($file->name())->value()
+			);
 		} catch (Exception $e) {
 			throw new InvalidArgumentException(
 				"[kirby-helpers] Failed to read or process file: {$file->filename()}. " . $e->getMessage()
@@ -419,6 +444,7 @@ if (!function_exists('autoLinkTitles')) {
 							$title = linkLabel('internal', $page);
 						}
 					} catch (\Exception $e) {
+						// Invalid or unresolvable UUID: leave the link without a title
 					}
 				} elseif (preg_match('#^/@/file/([a-z0-9]+)#i', $href, $uuidMatch)) {
 					try {
@@ -427,6 +453,7 @@ if (!function_exists('autoLinkTitles')) {
 							$title = linkLabel('document', $file);
 						}
 					} catch (\Exception $e) {
+						// Invalid or unresolvable UUID: leave the link without a title
 					}
 				} elseif (preg_match('/^mailto:(.+)/i', $href, $mailMatch)) {
 					$title = linkLabel('mail', $mailMatch[1]);
