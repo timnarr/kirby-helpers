@@ -114,3 +114,45 @@ if (!function_exists('resolveViteAssetPath')) {
 		return $realPath;
 	}
 }
+
+if (!function_exists('inlineCriticalScript')) {
+	/**
+	 * Inline a critical, pre-first-paint JS entry built by Vite in `iife` mode - self-contained, no
+	 * `import`/`export`, safe to drop into a plain classic `<script>` tag. Bypasses `inlineViteAsset()`
+	 * since the `iife` build has no manifest to resolve against (`manifest: false` in `vite.config.js`
+	 * for that mode), so the built file's fixed `[name]-iife.js` output path is used directly instead.
+	 *
+	 * In development mode the source file is inlined from the `vite.criticalScript.sourceRoot` option,
+	 * in production the built file from the `vite.criticalScript.buildRoot` option.
+	 *
+	 * @param string $path Entry path relative to the source root, e.g. 'javascript/critical.js'.
+	 * @throws InvalidArgumentException If the script is outside its root directory or not readable.
+	 *
+	 * @example
+	 * inlineCriticalScript('javascript/critical.js');
+	 * // dev:  inlines {sourceRoot}/javascript/critical.js
+	 * // prod: inlines {buildRoot}/critical-iife.js
+	 */
+	function inlineCriticalScript(string $path): void
+	{
+		if (isViteDevMode()) {
+			$rootPath = realpath(viteOption('criticalScript.sourceRoot'));
+			$filePath = $path;
+		} else {
+			$rootPath = realpath(viteOption('criticalScript.buildRoot'));
+			$filePath = pathinfo($path, PATHINFO_FILENAME) . '-iife.js';
+		}
+
+		$realPath = realpath($rootPath . '/' . $filePath);
+
+		if ($rootPath === false || $realPath === false || !str_starts_with($realPath, $rootPath . DIRECTORY_SEPARATOR)) {
+			throw new InvalidArgumentException("[kirby-helpers] Invalid critical script path: {$path}");
+		}
+
+		if (!is_readable($realPath)) {
+			throw new InvalidArgumentException("[kirby-helpers] Failed to read critical script: {$path}");
+		}
+
+		echo Html::tag(name: 'script', content: [F::read($realPath)]);
+	}
+}

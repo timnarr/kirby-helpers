@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `inlineCriticalScript(string $path): void` inlines a critical, pre-first-paint script from a Vite `iife` build into a classic `<script>` tag: the source file in development, the built `[name]-iife.js` in production. The directories are configurable via the new `vite.criticalScript.sourceRoot` and `vite.criticalScript.buildRoot` options.
 - `viteOption(string $key): mixed` reads a `timnarr.kirby-helpers.vite.*` option and resolves closures.
 
 ## [1.8.0] - 2026-10-07

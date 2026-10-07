@@ -7,6 +7,10 @@ Kirby::plugin('timnarr/kirby-helpers', [
 	'options' => [
 		'vite' => [
 			'manifestPath' => fn () => kirby()->root() . '/build/manifest.json',
+			'criticalScript' => [
+				'sourceRoot' => fn () => (kirby()->root('base') ?? kirby()->root('index')) . '/src',
+				'buildRoot' => fn () => kirby()->root('index') . '/build/iife',
+			],
 		],
 	],
 	'fieldMethods' => [
