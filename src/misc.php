@@ -445,15 +445,17 @@ if (!function_exists('autoLinkTitles')) {
 			function ($matches) {
 				$attributes = $matches[1];
 
-				if (preg_match('/\btitle\s*=/i', $attributes)) {
+				// The lookbehind keeps `data-title`/`data-href` and similar from matching
+				if (preg_match('/(?<![-\w])title\s*=/i', $attributes)) {
 					return $matches[0];
 				}
 
-				if (!preg_match('/\bhref\s*=\s*(["\'])(.*?)\1/i', $attributes, $hrefMatch)) {
+				if (!preg_match('/(?<![-\w])href\s*=\s*(["\'])(.*?)\1/i', $attributes, $hrefMatch)) {
 					return $matches[0];
 				}
 
-				$href = $hrefMatch[2];
+				// Attribute values in HTML are entity-encoded (e.g. `&amp;`), labels need the raw value
+				$href = html_entity_decode($hrefMatch[2], ENT_QUOTES | ENT_HTML5, 'UTF-8');
 				$title = null;
 
 				if (preg_match('#^/@/page/([a-z0-9]+)#i', $href, $uuidMatch)) {
@@ -478,17 +480,14 @@ if (!function_exists('autoLinkTitles')) {
 					$title = linkLabel('mail', $mailMatch[1]);
 				} elseif (preg_match('/^tel:(.+)/i', $href, $telMatch)) {
 					$title = linkLabel('tel', $telMatch[1]);
-				} elseif (preg_match('#^https?://#i', $href)) {
-					$currentHost = parse_url(Url::home(), PHP_URL_HOST);
-					$linkHost = parse_url($href, PHP_URL_HOST);
-
-					if ($currentHost !== $linkHost) {
-						$title = linkLabel('external', $href);
-					}
+				} elseif (isExternalUrl($href)) {
+					$title = linkLabel('external', $href);
 				}
 
 				if ($title !== null) {
-					return '<a ' . trim($attributes) . ' title="' . Html::encode($title) . '">';
+					// Don't double-encode: mail/tel labels are already obfuscated as HTML entities by linkLabel()
+					$encodedTitle = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
+					return '<a ' . trim($attributes) . ' title="' . $encodedTitle . '">';
 				}
 
 				return $matches[0];
