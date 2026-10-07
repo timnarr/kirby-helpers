@@ -11,19 +11,19 @@ Kirby::plugin('timnarr/kirby-helpers', [
 	],
 	'fieldMethods' => [
 		'ensureLeft' => function (Field $field, string $prefix): Field {
-			$field->value = ensureLeft($field->value, $prefix);
+			$field->value = ensureLeft((string)$field->value, $prefix);
 			return $field;
 		},
 		'ensureRight' => function (Field $field, string $suffix): Field {
-			$field->value = ensureRight($field->value, $suffix);
+			$field->value = ensureRight((string)$field->value, $suffix);
 			return $field;
 		},
 		'ensureHashed' => function (Field $field): Field {
-			$field->value = ensureHashed($field->value);
+			$field->value = ensureHashed((string)$field->value);
 			return $field;
 		},
 		'autoLinkTitles' => function (Field $field): Field {
-			$field->value = autoLinkTitles($field->value);
+			$field->value = autoLinkTitles((string)$field->value);
 			return $field;
 		},
 	],

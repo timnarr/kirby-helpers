@@ -350,18 +350,18 @@ if (!function_exists('buildMailtoLink')) {
 
 		$params = [];
 
-		if (!empty($subject)) {
+		if ($subject !== null && $subject !== '') {
 			$params[] = 'subject=' . rawurlencode($subject);
 		}
 
-		if (!empty($body)) {
+		if ($body !== null && $body !== '') {
 			$body = str_replace('\\n', "\n", $body);
 			// Normalize line breaks to CRLF for email compatibility
 			$body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
 			$params[] = 'body=' . rawurlencode($body);
 		}
 
-		if (!empty($params)) {
+		if ($params !== []) {
 			$mailto .= '?' . implode('&', $params);
 		}
 

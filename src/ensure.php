@@ -10,7 +10,7 @@ if (!function_exists('ensureLeft')) {
 	 */
 	function ensureLeft(string $string, string $prefix): string
 	{
-		if (empty($string)) {
+		if ($string === '') {
 			return '';
 		}
 
@@ -29,7 +29,7 @@ if (!function_exists('ensureRight')) {
 	 */
 	function ensureRight(string $string, string $suffix): string
 	{
-		if (empty($string)) {
+		if ($string === '') {
 			return '';
 		}
 
