@@ -265,12 +265,16 @@ if (!function_exists('addSvgAccessibilityAttributes')) {
 	 * Sanitizes SVG markup and injects accessibility attributes: either `aria-hidden` for decorative
 	 * SVGs, or a `<title>`/`<desc>` pair wired up via `aria-labelledby`.
 	 *
+	 * Existing `role`/`aria-*` attributes and top-level `<title>`/`<desc>` elements are replaced.
+	 * Their text is kept as a fallback when no title or description is passed.
+	 *
 	 * @param string $svgContent The raw SVG markup.
 	 * @param string $title The title for the SVG (optional).
 	 * @param string $description The description for the SVG (optional).
 	 * @param bool $isDecorative Whether the SVG is decorative (optional).
-	 * @param string $fallbackTitle Title to fall back to when non-decorative and no title was given.
+	 * @param string $fallbackTitle Title to fall back to when non-decorative and neither a title was given nor the SVG has one.
 	 * @return string The SVG markup with accessibility attributes applied.
+	 * @throws InvalidArgumentException If the SVG cannot be sanitized or parsed.
 	 */
 	function addSvgAccessibilityAttributes(
 		string $svgContent,
@@ -279,25 +283,57 @@ if (!function_exists('addSvgAccessibilityAttributes')) {
 		bool $isDecorative = false,
 		string $fallbackTitle = ''
 	): string {
-		$svgContent = Sane::sanitize($svgContent, 'svg');
+		// The same icon is often rendered many times per request, so sanitize each distinct SVG only once
+		static $sanitized = [];
+		$svgContent = $sanitized[md5($svgContent)] ??= Sane::sanitize($svgContent, 'svg');
+
+		$dom = new DOMDocument();
+		if (!@$dom->loadXML($svgContent, LIBXML_NONET)) {
+			throw new InvalidArgumentException('[kirby-helpers] Failed to parse SVG markup.');
+		}
+
+		$svg = $dom->documentElement;
+
+		foreach (['role', 'aria-hidden', 'aria-label', 'aria-labelledby', 'aria-describedby'] as $attribute) {
+			$svg->removeAttribute($attribute);
+		}
+
+		$existing = ['title' => '', 'desc' => ''];
+		foreach (iterator_to_array($svg->childNodes) as $node) {
+			if ($node instanceof DOMElement && isset($existing[$node->localName])) {
+				$existing[$node->localName] = $existing[$node->localName] ?: trim($node->textContent);
+				$svg->removeChild($node);
+			}
+		}
 
 		if ($isDecorative) {
-			return preg_replace('/<svg/', '<svg aria-hidden="true"', $svgContent, 1);
+			$svg->setAttribute('aria-hidden', 'true');
+			return $dom->saveXML($svg);
 		}
 
 		$uniqueId = uniqid('svg-');
-		$finalTitle = $title ?: $fallbackTitle;
+		$finalTitle = $title ?: $existing['title'] ?: $fallbackTitle;
+		$finalDescription = $description ?: $existing['desc'];
 
 		// aria-labelledby with both title and desc IDs has better screen-reader support than aria-describedby
-		$labelledBy = $uniqueId . '-title' . ($description ? ' ' . $uniqueId . '-desc' : '');
-		$ariaAttributes = 'role="img" aria-labelledby="' . $labelledBy . '"';
+		$labelledBy = $uniqueId . '-title' . ($finalDescription ? ' ' . $uniqueId . '-desc' : '');
+		$svg->setAttribute('role', 'img');
+		$svg->setAttribute('aria-labelledby', $labelledBy);
 
-		$svgContent = preg_replace('/<svg/', '<svg ' . $ariaAttributes, $svgContent, 1);
+		$elements = ['title' => $finalTitle];
+		if ($finalDescription) {
+			$elements['desc'] = $finalDescription;
+		}
 
-		$titleElement = '<title id="' . $uniqueId . '-title">' . Html::encode($finalTitle) . '</title>';
-		$descElement = $description ? '<desc id="' . $uniqueId . '-desc">' . Html::encode($description) . '</desc>' : '';
+		$firstChild = $svg->firstChild;
+		foreach ($elements as $name => $text) {
+			$element = $dom->createElementNS($svg->namespaceURI, $name);
+			$element->setAttribute('id', $uniqueId . '-' . $name);
+			$element->appendChild($dom->createTextNode($text));
+			$svg->insertBefore($element, $firstChild);
+		}
 
-		return preg_replace('/(<svg[^>]*>)/', '$1' . $titleElement . $descElement, $svgContent, 1);
+		return $dom->saveXML($svg);
 	}
 }
 
@@ -310,19 +346,22 @@ if (!function_exists('readAccessible')) {
 	 * @param string $description The description for the SVG (optional).
 	 * @param bool $isDecorative Whether the SVG is decorative (optional).
 	 * @return string The modified SVG content with accessibility attributes.
+	 * @throws InvalidArgumentException If the file is not an SVG or cannot be read or processed.
 	 */
 	function readAccessible(File $file, string $title = '', string $description = '', bool $isDecorative = false): string
 	{
-		try {
-			if ($file->extension() !== 'svg') {
-				return $file->read();
-			}
+		if ($file->extension() !== 'svg') {
+			throw new InvalidArgumentException(
+				"[kirby-helpers] readAccessible() only supports SVG files, `{$file->filename()}` given."
+			);
+		}
 
-			if (empty($title) && $file->svgTitle()->isNotEmpty()) {
+		try {
+			if ($title === '' && $file->svgTitle()->isNotEmpty()) {
 				$title = $file->svgTitle()->value();
 			}
 
-			if (empty($description) && $file->svgDescription()->isNotEmpty()) {
+			if ($description === '' && $file->svgDescription()->isNotEmpty()) {
 				$description = $file->svgDescription()->value();
 			}
 

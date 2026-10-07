@@ -203,7 +203,7 @@ getMissingTranslations($page); // ['de', 'fr']
 ### File Helpers
 
 #### `readAccessible(File $file, string $title = '', string $description = '', bool $isDecorative = false): string`
-Read and enhance SVG files with accessibility attributes (title, description, ARIA attributes).
+Read and enhance SVG files with accessibility attributes (title, description, ARIA attributes). Existing `role`/`aria-*` attributes and top-level `<title>`/`<desc>` elements of the SVG are replaced; their text is used as a fallback if no title or description is given. Throws an `InvalidArgumentException` for non-SVG files.
 
 ```php
 readAccessible($file, 'Icon description', 'Detailed description');
