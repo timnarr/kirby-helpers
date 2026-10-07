@@ -74,6 +74,31 @@ if (!function_exists('incrementHeadingLevel')) {
 	}
 }
 
+if (!function_exists('isExternalUrl')) {
+	/**
+	 * Check whether a URL points to a host other than the site's own host.
+	 * Relative URLs, anchors and host-less schemes such as `mailto:`, `tel:` or `sms:` are not external.
+	 *
+	 * @param string $url The URL to check.
+	 * @return bool True if the URL has a host that differs from the site's host.
+	 *
+	 * @example
+	 * isExternalUrl('https://other.com') // true
+	 * isExternalUrl('/contact') // false
+	 * isExternalUrl('mailto:test@example.com') // false
+	 */
+	function isExternalUrl(string $url): bool
+	{
+		$host = parse_url($url, PHP_URL_HOST);
+
+		if (!is_string($host) || $host === '') {
+			return false;
+		}
+
+		return strcasecmp($host, (string)parse_url(Url::home(), PHP_URL_HOST)) !== 0;
+	}
+}
+
 if (!function_exists('setBlankIfExternal')) {
 	/**
 	 * Determine if a link should open in a new tab (if external) and return an array of attributes.
@@ -84,16 +109,11 @@ if (!function_exists('setBlankIfExternal')) {
 	 */
 	function setBlankIfExternal(string $link, bool $omitHref = false): array
 	{
-		$isInternal = str_starts_with($link, Url::home()) ||
-			str_contains($link, 'mailto:') ||
-			str_contains($link, 'tel:') ||
-			str_contains($link, 'sms:');
-
 		$attrs = [];
 		if (!$omitHref) {
 			$attrs['href'] = $link;
 		}
-		if (!$isInternal) {
+		if (isExternalUrl($link)) {
 			$attrs['target'] = '_blank';
 		}
 

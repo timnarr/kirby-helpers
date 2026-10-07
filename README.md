@@ -128,12 +128,24 @@ cssIfBlock('assets/css/gallery.css', 'gallery', $blockTypes);
 
 ### Link Helpers
 
-#### `setBlankIfExternal(string $link, bool $omitHref = false): array`
-Determine if a link is external and return appropriate attributes (target="_blank" for external links).
+#### `isExternalUrl(string $url): bool`
+Check whether a URL points to a different host than the site. Relative URLs, anchors and host-less schemes (`mailto:`, `tel:`, `sms:`) are not external.
 
 ```php
-setBlankIfExternal('https://example.com');
-// ['href' => 'https://example.com', 'target' => '_blank']
+isExternalUrl('https://other.com'); // true
+isExternalUrl('/contact');          // false
+isExternalUrl('mailto:test@example.com'); // false
+```
+
+#### `setBlankIfExternal(string $link, bool $omitHref = false): array`
+Determine if a link is external (see `isExternalUrl()`) and return appropriate attributes (target="_blank" for external links).
+
+```php
+setBlankIfExternal('https://other.com');
+// ['href' => 'https://other.com', 'target' => '_blank']
+
+setBlankIfExternal('/contact');
+// ['href' => '/contact']
 
 setBlankIfExternal('mailto:test@example.com');
 // ['href' => 'mailto:test@example.com']
