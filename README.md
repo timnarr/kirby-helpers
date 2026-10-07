@@ -169,6 +169,15 @@ linkLabel('mail', 'test@example.com'); // "Send email to: test@example.com"
 linkLabel('tel', '+1234567890'); // "Call phone number: +1234567890"
 ```
 
+#### `linkLabelForHref(string $href): string|null`
+Detect the link type of an href and return the matching `linkLabel()`. Used by `autoLinkTitles()`. Returns `null` for internal links and unresolvable UUIDs.
+
+```php
+linkLabelForHref('/@/page/abc123');  // "Link to page: {title}"
+linkLabelForHref('mailto:test@example.com'); // "Send email to: test@example.com"
+linkLabelForHref('/contact');        // null
+```
+
 #### `buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string`
 Build a mailto link with optional subject and body parameters.
 

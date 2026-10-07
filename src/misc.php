@@ -465,6 +465,52 @@ if (!function_exists('getUsedBlockTypesFromLayouts')) {
 }
 
 
+if (!function_exists('linkLabelForHref')) {
+	/**
+	 * Detect the link type of an href and generate the matching label via `linkLabel()`.
+	 * Internal links (other than Kirby UUID permalinks) and unresolvable UUIDs get no label.
+	 *
+	 * @param string $href The decoded href value.
+	 * @return string|null The link label, or null if the link needs none.
+	 *
+	 * @example
+	 * linkLabelForHref('mailto:test@example.com') // 'Send email to: …'
+	 * linkLabelForHref('/contact') // null
+	 */
+	function linkLabelForHref(string $href): string|null
+	{
+		if (preg_match('#^/@/(page|file)/([a-z0-9]+)#i', $href, $uuidMatch)) {
+			try {
+				$model = Uuid::for(strtolower($uuidMatch[1]) . '://' . $uuidMatch[2])?->model();
+
+				return match (true) {
+					$model instanceof Page => linkLabel('internal', $model),
+					$model instanceof File => linkLabel('document', $model),
+					default => null,
+				};
+			} catch (\Exception) {
+				// Invalid or unresolvable UUID: leave the link without a title
+				return null;
+			}
+		}
+
+		if (preg_match('/^mailto:(.+)/i', $href, $mailMatch)) {
+			return linkLabel('mail', $mailMatch[1]);
+		}
+
+		if (preg_match('/^tel:(.+)/i', $href, $telMatch)) {
+			return linkLabel('tel', $telMatch[1]);
+		}
+
+		if (isExternalUrl($href)) {
+			return linkLabel('external', $href);
+		}
+
+		return null;
+	}
+}
+
+
 if (!function_exists('autoLinkTitles')) {
 	/**
 	 * Automatically add title attributes to links in HTML content.
@@ -495,33 +541,7 @@ if (!function_exists('autoLinkTitles')) {
 
 				// Attribute values in HTML are entity-encoded (e.g. `&amp;`), labels need the raw value
 				$href = html_entity_decode($hrefMatch[2], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-				$title = null;
-
-				if (preg_match('#^/@/page/([a-z0-9]+)#i', $href, $uuidMatch)) {
-					try {
-						$page = Uuid::for('page://' . $uuidMatch[1])?->model();
-						if ($page instanceof Page) {
-							$title = linkLabel('internal', $page);
-						}
-					} catch (\Exception $e) {
-						// Invalid or unresolvable UUID: leave the link without a title
-					}
-				} elseif (preg_match('#^/@/file/([a-z0-9]+)#i', $href, $uuidMatch)) {
-					try {
-						$file = Uuid::for('file://' . $uuidMatch[1])?->model();
-						if ($file instanceof File) {
-							$title = linkLabel('document', $file);
-						}
-					} catch (\Exception $e) {
-						// Invalid or unresolvable UUID: leave the link without a title
-					}
-				} elseif (preg_match('/^mailto:(.+)/i', $href, $mailMatch)) {
-					$title = linkLabel('mail', $mailMatch[1]);
-				} elseif (preg_match('/^tel:(.+)/i', $href, $telMatch)) {
-					$title = linkLabel('tel', $telMatch[1]);
-				} elseif (isExternalUrl($href)) {
-					$title = linkLabel('external', $href);
-				}
+				$title = linkLabelForHref($href);
 
 				if ($title !== null) {
 					// Don't double-encode: mail/tel labels are already obfuscated as HTML entities by linkLabel()
