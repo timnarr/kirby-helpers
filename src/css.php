@@ -2,6 +2,7 @@
 
 use Kirby\Cms\Blocks;
 use Kirby\Cms\Html;
+use Kirby\Cms\Url;
 
 if (!function_exists('cssLazy')) {
 	/**
@@ -18,11 +19,17 @@ if (!function_exists('cssLazy')) {
 	 */
 	function cssLazy(string $file, bool $omitNoscript = false): void
 	{
-		echo Html::css(url: $file, options: [
+		// Html::css() always forces rel="stylesheet", so build the preload link manually.
+		// The `css` component is still applied to support asset plugins like fingerprinting.
+		$kirby = kirby();
+		$url = Url::to(($kirby->component('css'))($kirby, $file, []));
+
+		echo Html::tag(name: 'link', attr: [
 			'as' => 'style',
-			'rel' => 'preload',
 			'fetchpriority' => 'low',
+			'href' => $url,
 			'onload' => "this.onload=null;this.rel='stylesheet'",
+			'rel' => 'preload',
 		]);
 
 		if (!$omitNoscript) {
