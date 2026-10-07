@@ -5,6 +5,21 @@ use Kirby\Cms\Url;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Filesystem\F;
 
+if (!function_exists('viteOption')) {
+	/**
+	 * Read a `timnarr.kirby-helpers.vite.*` option, resolving closures to their return value.
+	 *
+	 * @param string $key The option key below `timnarr.kirby-helpers.vite`, e.g. 'manifestPath'.
+	 * @return mixed The resolved option value.
+	 */
+	function viteOption(string $key): mixed
+	{
+		$value = kirby()->option('timnarr.kirby-helpers.vite.' . $key);
+
+		return is_callable($value) ? $value() : $value;
+	}
+}
+
 if (!function_exists('isViteDevMode')) {
 	/**
 	 * Check if Vite is in development mode by verifying the presence of the manifest file.
@@ -17,11 +32,7 @@ if (!function_exists('isViteDevMode')) {
 		static $devMode = null;
 
 		if ($devMode === null) {
-			$manifestPath = kirby()->option('timnarr.kirby-helpers.vite.manifestPath');
-			if (is_callable($manifestPath)) {
-				$manifestPath = $manifestPath();
-			}
-			$devMode = !F::exists($manifestPath);
+			$devMode = !F::exists(viteOption('manifestPath'));
 		}
 
 		return $devMode;
