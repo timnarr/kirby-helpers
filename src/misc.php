@@ -13,14 +13,13 @@ use Kirby\Sane\Sane;
 use Kirby\Toolkit\Str;
 use Kirby\Uuid\Uuid;
 
-/**
- * Validate a heading level string.
- *
- * @param string $level The heading level to validate.
- * @return void
- * @throws InvalidArgumentException If the provided heading level is not valid.
- */
 if (!function_exists('validateHeadingLevel')) {
+	/**
+	 * Validate a heading level string.
+	 *
+	 * @param string $level The heading level to validate.
+	 * @throws InvalidArgumentException If the provided heading level is not valid.
+	 */
 	function validateHeadingLevel(string $level): void
 	{
 		if (!in_array($level, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true)) {
@@ -31,16 +30,16 @@ if (!function_exists('validateHeadingLevel')) {
 	}
 }
 
-/**
- * Generate an HTML heading element with the specified level, text, and attributes.
- *
- * @param string $level The heading level (e.g., 'h1', 'h2', 'h3', 'h4', 'h5', 'h6').
- * @param string $text The text content of the heading.
- * @param array $attrs An associative array of HTML attributes (optional).
- * @return string The generated HTML string for the heading.
- * @throws InvalidArgumentException If the provided heading level is not valid.
- */
 if (!function_exists('heading')) {
+	/**
+	 * Generate an HTML heading element with the specified level, text, and attributes.
+	 *
+	 * @param string $level The heading level (e.g., 'h1', 'h2', 'h3', 'h4', 'h5', 'h6').
+	 * @param string $text The text content of the heading.
+	 * @param array $attrs An associative array of HTML attributes (optional).
+	 * @return string The generated HTML string for the heading.
+	 * @throws InvalidArgumentException If the provided heading level is not valid.
+	 */
 	function heading(string $level, string $text, array $attrs = []): string
 	{
 		validateHeadingLevel($level);
@@ -49,21 +48,21 @@ if (!function_exists('heading')) {
 	}
 }
 
-/**
- * Increment or decrement a heading level by a specified number of steps.
- *
- * @param string $level The current heading level (e.g., 'h1', 'h2', ..., 'h6').
- * @param int $steps The number of steps to increment (positive) or decrement (negative). Default is 1.
- * @return string The new heading level, clamped between 'h1' and 'h6'.
- * @throws InvalidArgumentException If the provided heading level is not valid.
- *
- * @example
- * incrementHeadingLevel('h2', 1) // returns 'h3'
- * incrementHeadingLevel('h2', -1) // returns 'h1'
- * incrementHeadingLevel('h6', 1) // returns 'h6' (clamped at maximum)
- * incrementHeadingLevel('h1', -1) // returns 'h1' (clamped at minimum)
- */
 if (!function_exists('incrementHeadingLevel')) {
+	/**
+	 * Increment or decrement a heading level by a specified number of steps.
+	 *
+	 * @param string $level The current heading level (e.g., 'h1', 'h2', ..., 'h6').
+	 * @param int $steps The number of steps to increment (positive) or decrement (negative). Default is 1.
+	 * @return string The new heading level, clamped between 'h1' and 'h6'.
+	 * @throws InvalidArgumentException If the provided heading level is not valid.
+	 *
+	 * @example
+	 * incrementHeadingLevel('h2', 1) // returns 'h3'
+	 * incrementHeadingLevel('h2', -1) // returns 'h1'
+	 * incrementHeadingLevel('h6', 1) // returns 'h6' (clamped at maximum)
+	 * incrementHeadingLevel('h1', -1) // returns 'h1' (clamped at minimum)
+	 */
 	function incrementHeadingLevel(string $level, int $steps = 1): string
 	{
 		validateHeadingLevel($level);
@@ -75,14 +74,14 @@ if (!function_exists('incrementHeadingLevel')) {
 	}
 }
 
-/**
- * Determine if a link should open in a new tab (if external) and return an array of attributes.
- *
- * @param string $link The URL link.
- * @param bool $omitHref Optional. If true, the href attribute will be null.
- * @return array The attributes for the link.
- */
 if (!function_exists('setBlankIfExternal')) {
+	/**
+	 * Determine if a link should open in a new tab (if external) and return an array of attributes.
+	 *
+	 * @param string $link The URL link.
+	 * @param bool $omitHref Optional. If true, the href attribute will be null.
+	 * @return array The attributes for the link.
+	 */
 	function setBlankIfExternal(string $link, bool $omitHref = false): array
 	{
 		$isInternal = str_starts_with($link, Url::home()) ||
@@ -103,15 +102,15 @@ if (!function_exists('setBlankIfExternal')) {
 }
 
 
-/**
- * Generate a link label based on the type and data provided.
- *
- * @param string $type The type of link (e.g., 'internal', 'document', 'external', 'mail', 'tel', 'custom', 'anchor').
- * @param string|Page|File|\Closure $data The data used to generate the label.
- * @return string The generated link label.
- * @throws InvalidArgumentException If an invalid type is provided or if data for certain types does not meet the expected type.
- */
 if (!function_exists('linkLabel')) {
+	/**
+	 * Generate a link label based on the type and data provided.
+	 *
+	 * @param string $type The type of link (e.g., 'internal', 'document', 'external', 'mail', 'tel', 'custom', 'anchor').
+	 * @param string|Page|File|\Closure $data The data used to generate the label.
+	 * @return string The generated link label.
+	 * @throws InvalidArgumentException If an invalid type is provided or if data for certain types does not meet the expected type.
+	 */
 	function linkLabel(string $type, string|Page|File|\Closure $data): string
 	{
 		return match ($type) {
@@ -154,24 +153,24 @@ if (!function_exists('linkLabel')) {
 }
 
 
-/**
- * Determine if a given page should be excluded from caching based on specified conditions.
- *
- * @param Page $page The page to be checked.
- * @param Pages $ignoredPages A collection of pages that should be ignored.
- * @param array $ignoredSlugs An array of slugs that should be ignored (optional).
- * @param array $ignoredTemplates An array of templates that should be ignored (optional).
- * @return bool Returns true if the page is in one of the ignored lists (templates, slugs, or specific pages); otherwise, returns false.
- *
- * @example
- * shouldIgnorePageFromCache($page, $ignoredPages, ['example-slug'], ['contact-template'])
- *
- * @example
- * 'cache.pages.ignore' => function ($page) {
- *   return shouldIgnorePageFromCache($page, site()->notCachedPages()->toPages(), ['my-slug'], ['my-template']);
- * }
- */
 if (!function_exists('shouldIgnorePageFromCache')) {
+	/**
+	 * Determine if a given page should be excluded from caching based on specified conditions.
+	 *
+	 * @param Page $page The page to be checked.
+	 * @param Pages $ignoredPages A collection of pages that should be ignored.
+	 * @param array $ignoredSlugs An array of slugs that should be ignored (optional).
+	 * @param array $ignoredTemplates An array of templates that should be ignored (optional).
+	 * @return bool Returns true if the page is in one of the ignored lists (templates, slugs, or specific pages); otherwise, returns false.
+	 *
+	 * @example
+	 * shouldIgnorePageFromCache($page, $ignoredPages, ['example-slug'], ['contact-template'])
+	 *
+	 * @example
+	 * 'cache.pages.ignore' => function ($page) {
+	 *   return shouldIgnorePageFromCache($page, site()->notCachedPages()->toPages(), ['my-slug'], ['my-template']);
+	 * }
+	 */
 	function shouldIgnorePageFromCache(Page $page, Pages|null $ignoredPages, array $ignoredSlugs = [], array $ignoredTemplates = []): bool
 	{
 		$ignoredTemplates = array_merge(['error'], $ignoredTemplates);
@@ -189,14 +188,14 @@ if (!function_exists('shouldIgnorePageFromCache')) {
 }
 
 
-/**
- * This function returns an array of language codes where translations are available
- * for a provided page, ignoring the current language code.
- *
- * @param Page $page The page for which to check available translations.
- * @return array Returns an array of language codes that have translations available, excluding the current language.
- */
 if (!function_exists('getAvailableTranslations')) {
+	/**
+	 * This function returns an array of language codes where translations are available
+	 * for a provided page, ignoring the current language code.
+	 *
+	 * @param Page $page The page for which to check available translations.
+	 * @return array Returns an array of language codes that have translations available, excluding the current language.
+	 */
 	function getAvailableTranslations(Page $page): array
 	{
 		if (!kirby()->multilang()) {
@@ -219,13 +218,13 @@ if (!function_exists('getAvailableTranslations')) {
 }
 
 
-/**
- * Get an array of language codes for which the page translation does not exist.
- *
- * @param Page $page The page for which to check missing translations.
- * @return array Returns an array of language codes that are missing translations.
- */
 if (!function_exists('getMissingTranslations')) {
+	/**
+	 * Get an array of language codes for which the page translation does not exist.
+	 *
+	 * @param Page $page The page for which to check missing translations.
+	 * @return array Returns an array of language codes that are missing translations.
+	 */
 	function getMissingTranslations(Page $page): array
 	{
 		$missing = [];
@@ -241,18 +240,18 @@ if (!function_exists('getMissingTranslations')) {
 }
 
 
-/**
- * Sanitizes SVG markup and injects accessibility attributes: either `aria-hidden` for decorative
- * SVGs, or a `<title>`/`<desc>` pair wired up via `aria-labelledby`.
- *
- * @param string $svgContent The raw SVG markup.
- * @param string $title The title for the SVG (optional).
- * @param string $description The description for the SVG (optional).
- * @param bool $isDecorative Whether the SVG is decorative (optional).
- * @param string $fallbackTitle Title to fall back to when non-decorative and no title was given.
- * @return string The SVG markup with accessibility attributes applied.
- */
 if (!function_exists('addSvgAccessibilityAttributes')) {
+	/**
+	 * Sanitizes SVG markup and injects accessibility attributes: either `aria-hidden` for decorative
+	 * SVGs, or a `<title>`/`<desc>` pair wired up via `aria-labelledby`.
+	 *
+	 * @param string $svgContent The raw SVG markup.
+	 * @param string $title The title for the SVG (optional).
+	 * @param string $description The description for the SVG (optional).
+	 * @param bool $isDecorative Whether the SVG is decorative (optional).
+	 * @param string $fallbackTitle Title to fall back to when non-decorative and no title was given.
+	 * @return string The SVG markup with accessibility attributes applied.
+	 */
 	function addSvgAccessibilityAttributes(
 		string $svgContent,
 		string $title = '',
@@ -282,16 +281,16 @@ if (!function_exists('addSvgAccessibilityAttributes')) {
 	}
 }
 
-/**
- * Reads the SVG content of a Kirby file and adds accessibility attributes based on custom fields.
- *
- * @param File $file The file object representing the SVG.
- * @param string $title The title for the SVG (optional).
- * @param string $description The description for the SVG (optional).
- * @param bool $isDecorative Whether the SVG is decorative (optional).
- * @return string The modified SVG content with accessibility attributes.
- */
 if (!function_exists('readAccessible')) {
+	/**
+	 * Reads the SVG content of a Kirby file and adds accessibility attributes based on custom fields.
+	 *
+	 * @param File $file The file object representing the SVG.
+	 * @param string $title The title for the SVG (optional).
+	 * @param string $description The description for the SVG (optional).
+	 * @param bool $isDecorative Whether the SVG is decorative (optional).
+	 * @return string The modified SVG content with accessibility attributes.
+	 */
 	function readAccessible(File $file, string $title = '', string $description = '', bool $isDecorative = false): string
 	{
 		try {
@@ -324,27 +323,27 @@ if (!function_exists('readAccessible')) {
 	}
 }
 
-/**
- * Build a mailto link with optional subject and body parameters.
- *
- * @param string $email The email address (will be obfuscated). Should not be pre-encoded.
- * @param string|null $subject Optional subject line for the email. Should not be pre-encoded.
- * @param string|null $body Optional body text for the email. Line breaks can be added with literal \n. Should not be pre-encoded.
- * @return string The complete mailto link with query parameters.
- *
- * @example
- * buildMailtoLink('test@example.com', 'Hello', 'This is a test')
- * // returns 'mailto:obfuscated@email.com?subject=Hello&body=This%20is%20a%20test'
- *
- * @example
- * buildMailtoLink('test@example.com')
- * // returns 'mailto:obfuscated@email.com'
- *
- * @example with line breaks
- * buildMailtoLink('test@example.com', 'Hello', 'Line 1\nLine 2')
- * // returns mailto link with proper line break encoding
- */
 if (!function_exists('buildMailtoLink')) {
+	/**
+	 * Build a mailto link with optional subject and body parameters.
+	 *
+	 * @param string $email The email address (will be obfuscated). Should not be pre-encoded.
+	 * @param string|null $subject Optional subject line for the email. Should not be pre-encoded.
+	 * @param string|null $body Optional body text for the email. Line breaks can be added with literal \n. Should not be pre-encoded.
+	 * @return string The complete mailto link with query parameters.
+	 *
+	 * @example
+	 * buildMailtoLink('test@example.com', 'Hello', 'This is a test')
+	 * // returns 'mailto:obfuscated@email.com?subject=Hello&body=This%20is%20a%20test'
+	 *
+	 * @example
+	 * buildMailtoLink('test@example.com')
+	 * // returns 'mailto:obfuscated@email.com'
+	 *
+	 * @example with line breaks
+	 * buildMailtoLink('test@example.com', 'Hello', 'Line 1\nLine 2')
+	 * // returns mailto link with proper line break encoding
+	 */
 	function buildMailtoLink(string $email, string|null $subject = null, string|null $body = null): string
 	{
 		$mailto = 'mailto:' . Str::encode($email);
@@ -370,22 +369,22 @@ if (!function_exists('buildMailtoLink')) {
 	}
 }
 
-/**
- * Extract all used block types from a Layouts, Layout object or array of layouts.
- * Iterates through all layouts, their columns, and blocks to find all used block types.
- *
- * @param \Kirby\Cms\Layouts|\Kirby\Cms\Layout|array $layouts The layouts to analyze.
- * @return array An array of block type strings.
- *
- * @example
- * $blockTypes = getUsedBlockTypesFromLayouts($page->sections()->toLayouts());
- * // returns ['heading', 'text', 'image', 'gallery']
- *
- * @example with cssIfBlock
- * $pageBlocks = getUsedBlockTypesFromLayouts($page->sections()->toLayouts());
- * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
- */
 if (!function_exists('getUsedBlockTypesFromLayouts')) {
+	/**
+	 * Extract all used block types from a Layouts, Layout object or array of layouts.
+	 * Iterates through all layouts, their columns, and blocks to find all used block types.
+	 *
+	 * @param \Kirby\Cms\Layouts|\Kirby\Cms\Layout|array $layouts The layouts to analyze.
+	 * @return array An array of block type strings.
+	 *
+	 * @example
+	 * $blockTypes = getUsedBlockTypesFromLayouts($page->sections()->toLayouts());
+	 * // returns ['heading', 'text', 'image', 'gallery']
+	 *
+	 * @example with cssIfBlock
+	 * $pageBlocks = getUsedBlockTypesFromLayouts($page->sections()->toLayouts());
+	 * cssIfBlock('assets/css/gallery.css', 'gallery', $pageBlocks);
+	 */
 	function getUsedBlockTypesFromLayouts(Layouts|Layout|array $layouts): array
 	{
 		$types = [];
@@ -407,18 +406,18 @@ if (!function_exists('getUsedBlockTypesFromLayouts')) {
 }
 
 
-/**
- * Automatically add title attributes to links in HTML content.
- * Detects link types (internal pages, files, email, phone, external) and generates appropriate titles.
- *
- * @param string $html The HTML content containing links.
- * @return string The HTML with title attributes added to links (if they don't already have one).
- *
- * @example
- * autoLinkTitles('<a href="/@/page/abc123">Contact</a>')
- * // returns '<a href="/@/page/abc123" title="Link to page: Contact">Contact</a>'
- */
 if (!function_exists('autoLinkTitles')) {
+	/**
+	 * Automatically add title attributes to links in HTML content.
+	 * Detects link types (internal pages, files, email, phone, external) and generates appropriate titles.
+	 *
+	 * @param string $html The HTML content containing links.
+	 * @return string The HTML with title attributes added to links (if they don't already have one).
+	 *
+	 * @example
+	 * autoLinkTitles('<a href="/@/page/abc123">Contact</a>')
+	 * // returns '<a href="/@/page/abc123" title="Link to page: Contact">Contact</a>'
+	 */
 	function autoLinkTitles(string $html): string
 	{
 		return preg_replace_callback(
