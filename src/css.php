@@ -39,6 +39,24 @@ if (!function_exists('cssLazy')) {
 }
 
 
+if (!function_exists('cssLoad')) {
+	/**
+	 * Load a CSS file either lazily or as a regular stylesheet.
+	 *
+	 * @param string $file The CSS file path.
+	 * @param bool $lazy Optional. If true, load the CSS file lazily.
+	 */
+	function cssLoad(string $file, bool $lazy = false): void
+	{
+		if ($lazy) {
+			cssLazy($file);
+		} else {
+			echo Html::css(url: $file);
+		}
+	}
+}
+
+
 if (!function_exists('cssIfBlock')) {
 	/**
 	 * Load CSS file only if a defined block is used.
@@ -58,16 +76,10 @@ if (!function_exists('cssIfBlock')) {
 	{
 		$found = $blocks instanceof Blocks
 			? $blocks->hasType($blockType)
-			: in_array($blockType, $blocks);
+			: in_array($blockType, $blocks, true);
 
-		if (!$found) {
-			return;
-		}
-
-		if ($lazy) {
-			cssLazy($file);
-		} else {
-			echo Html::css(url: $file);
+		if ($found) {
+			cssLoad($file, $lazy);
 		}
 	}
 }
@@ -86,14 +98,8 @@ if (!function_exists('cssIfTemplate')) {
 		$templates = is_array($template) ? $template : [$template];
 		$currentTemplate = page()->intendedTemplate()->name();
 
-		if (!in_array($currentTemplate, $templates, true)) {
-			return;
-		}
-
-		if ($lazy) {
-			cssLazy($file);
-		} else {
-			echo Html::css(url: $file);
+		if (in_array($currentTemplate, $templates, true)) {
+			cssLoad($file, $lazy);
 		}
 	}
 }

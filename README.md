@@ -52,6 +52,13 @@ cssIfTemplate('assets/css/contact.css', 'contact');
 cssIfTemplate('assets/css/forms.css', ['contact', 'signup']);
 ```
 
+#### `cssLoad(string $file, bool $lazy = false): void`
+Load a CSS file either lazily (via `cssLazy()`) or as a regular stylesheet. Used internally by `cssIfBlock()` and `cssIfTemplate()`.
+
+```php
+cssLoad('assets/css/carousel.css', $isBelowTheFold);
+```
+
 ---
 
 ### String Helpers
