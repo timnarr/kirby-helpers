@@ -231,16 +231,13 @@ readAccessible($file, '', '', true); // Decorative SVG with aria-hidden
 ### Vite Helpers
 
 #### `isViteDevMode(): bool`
-Check if Vite is in development mode by verifying manifest file presence.
+> [!WARNING]
+> Deprecated, use `vite()->isRunningHot()` instead.
 
-```php
-if (isViteDevMode()) {
-    // Development-specific code
-}
-```
+Check if the Vite dev server is running. Alias for `vite()->isRunningHot()`.
 
 #### `inlineViteAsset(string|array $files, string $type): void`
-Inline Vite assets (stylesheet or script) based on environment.
+Inline Vite assets (stylesheet or script). While the Vite dev server is running, the assets are linked from it instead.
 
 ```php
 inlineViteAsset('main.css', 'stylesheet');
@@ -250,8 +247,8 @@ inlineViteAsset(['app.js', 'vendor.js'], 'script');
 #### `inlineCriticalScript(string $path): void`
 Inline a critical, pre-first-paint script built by Vite in `iife` mode (self-contained, no `import`/`export`) into a classic `<script>` tag. The `iife` build has no manifest, so the file is resolved by its fixed output name `[name]-iife.js`:
 
-- **Development:** inlines `{vite.criticalScript.sourceRoot}/{$path}`
-- **Production:** inlines `{vite.criticalScript.buildRoot}/{filename}-iife.js`
+- **Dev server running:** inlines `{vite.criticalScript.sourceRoot}/{$path}`
+- **Otherwise:** inlines `{vite.criticalScript.buildRoot}/{filename}-iife.js`
 
 ```php
 inlineCriticalScript('javascript/critical.js');
@@ -336,7 +333,6 @@ The following options are available for customization:
 
 | Option | Default | Type | Description |
 | ------ | ------- | ---- | ----------- |
-| `vite.manifestPath` | `fn() => kirby()->root() . '/build/manifest.json'` | string\|Closure | Path to Vite's manifest file to determine dev mode. Used by `isViteDevMode()` |
 | `vite.criticalScript.sourceRoot` | `fn() => (kirby()->root('base') ?? kirby()->root('index')) . '/src'` | string\|Closure | Directory of the script sources, used by `inlineCriticalScript()` in development mode |
 | `vite.criticalScript.buildRoot` | `fn() => kirby()->root('index') . '/build/iife'` | string\|Closure | Output directory of the `iife` build, used by `inlineCriticalScript()` in production |
 

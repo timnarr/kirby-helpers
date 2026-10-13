@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-10-13
+
+### Changed
+
+- `inlineViteAsset()` and `inlineCriticalScript()` now detect development mode via `vite()->isRunningHot()` instead of a missing manifest. This matches what `vite()->asset()` returns, so a leftover build no longer breaks inlining while the dev server is running.
+
+### Deprecated
+
+- `isViteDevMode()` is now an alias for `vite()->isRunningHot()`. Use that instead.
+
+### Removed
+
+- The `vite.manifestPath` option, as it is no longer used.
+
 ## [1.9.0] - 2026-10-07
 
 ### Added

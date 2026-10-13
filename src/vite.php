@@ -9,7 +9,7 @@ if (!function_exists('viteOption')) {
 	/**
 	 * Read a `timnarr.kirby-helpers.vite.*` option, resolving closures to their return value.
 	 *
-	 * @param string $key The option key below `timnarr.kirby-helpers.vite`, e.g. 'manifestPath'.
+	 * @param string $key The option key below `timnarr.kirby-helpers.vite`, e.g. 'criticalScript.buildRoot'.
 	 * @return mixed The resolved option value.
 	 */
 	function viteOption(string $key): mixed
@@ -22,20 +22,14 @@ if (!function_exists('viteOption')) {
 
 if (!function_exists('isViteDevMode')) {
 	/**
-	 * Check if Vite is in development mode by verifying the presence of the manifest file.
-	 * Uses static caching to avoid repeated filesystem checks.
+	 * Check if the Vite dev server is running.
 	 *
-	 * @return bool True if Vite is in development mode, false otherwise.
+	 * @deprecated Use `vite()->isRunningHot()` instead.
+	 * @return bool True if the Vite dev server is running, false otherwise.
 	 */
 	function isViteDevMode(): bool
 	{
-		static $devMode = null;
-
-		if ($devMode === null) {
-			$devMode = !F::exists(viteOption('manifestPath'));
-		}
-
-		return $devMode;
+		return vite()->isRunningHot();
 	}
 }
 
@@ -58,7 +52,7 @@ if (!function_exists('inlineViteAsset')) {
 
 		$files = is_array($files) ? $files : [$files];
 
-		if (isViteDevMode()) {
+		if (vite()->isRunningHot()) {
 			foreach ($files as $file) {
 				$filePath = vite()->asset($file);
 				echo $type === 'stylesheet'
@@ -122,8 +116,8 @@ if (!function_exists('inlineCriticalScript')) {
 	 * since the `iife` build has no manifest to resolve against (`manifest: false` in `vite.config.js`
 	 * for that mode), so the built file's fixed `[name]-iife.js` output path is used directly instead.
 	 *
-	 * In development mode the source file is inlined from the `vite.criticalScript.sourceRoot` option,
-	 * in production the built file from the `vite.criticalScript.buildRoot` option.
+	 * While the Vite dev server is running the source file is inlined from the `vite.criticalScript.sourceRoot` option,
+	 * otherwise the built file from the `vite.criticalScript.buildRoot` option.
 	 *
 	 * @param string $path Entry path relative to the source root, e.g. 'javascript/critical.js'.
 	 * @throws InvalidArgumentException If the script is outside its root directory or not readable.
@@ -135,7 +129,7 @@ if (!function_exists('inlineCriticalScript')) {
 	 */
 	function inlineCriticalScript(string $path): void
 	{
-		if (isViteDevMode()) {
+		if (vite()->isRunningHot()) {
 			$rootPath = realpath(viteOption('criticalScript.sourceRoot'));
 			$filePath = $path;
 		} else {
