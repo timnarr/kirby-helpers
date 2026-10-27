@@ -481,7 +481,7 @@ if (!function_exists('linkLabelForHref')) {
 	{
 		if (preg_match('#^/@/(page|file)/([a-z0-9]+)#i', $href, $uuidMatch)) {
 			try {
-				$model = Uuid::for(strtolower($uuidMatch[1]) . '://' . $uuidMatch[2])?->model();
+				$model = Uuid::from(strtolower($uuidMatch[1]) . '://' . $uuidMatch[2])?->model();
 
 				return match (true) {
 					$model instanceof Page => linkLabel('internal', $model),

@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-beta.1] - 2026-10-27
+
+### ⚠️ Breaking changes
+
+- Requires Kirby 6 and PHP 8.3 or newer. Support for Kirby 4 and 5 and PHP 8.2 has been dropped.
+
+### Changed
+
+- `autoLinkTitles()` / `linkLabelForHref()` resolve `/@/page/…` and `/@/file/…` permalinks via `Uuid::from()`, as `Uuid::for()` no longer accepts strings in Kirby 6.
+
 ## [1.10.0] - 2026-10-13
 
 ### Changed
